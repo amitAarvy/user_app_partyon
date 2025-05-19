@@ -1,0 +1,463 @@
+{
+  "project_info": {
+    "project_number": "774845460870",
+    "firebase_url": "https://partyon-artist-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "partyon-artist",
+    "storage_bucket": "partyon-artist.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:774845460870:android:a3bbb5e0acd8088b56bc07",
+        "android_client_info": {
+          "package_name": "com.partyon.user"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "774845460870-2ibod8tf4l0bkallm78co6ohqis9i77l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABTFYsW2tcUjieHi3Lu4dUGr8ANXnmea4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "774845460870-2ibod8tf4l0bkallm78co6ohqis9i77l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "774845460870-8hlfqt9avh5lh7nsr35oehj3lso8b25t.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "hashtag.partyon.partner"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:774845460870:android:64a49aeb87cad7f556bc07",
+        "android_client_info": {
+          "package_name": "divinelok.app.user"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "774845460870-j77nl5m0md49qsdj6iijtbepcc53e2os.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "divinelok.app.user",
+            "certificate_hash": "5c25ffa47c381f6ce3b6aa7dfe15e522a27a9247"
+          }
+        },
+        {
+          "client_id": "774845460870-joad5jvkk0nok28bsvlqkgiembg37pcq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "divinelok.app.user",
+            "certificate_hash": "ad9dff327470b27a824795bffc769fb10d3d360e"
+          }
+        },
+        {
+          "client_id": "774845460870-2ibod8tf4l0bkallm78co6ohqis9i77l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABTFYsW2tcUjieHi3Lu4dUGr8ANXnmea4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "774845460870-2ibod8tf4l0bkallm78co6ohqis9i77l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "774845460870-8hlfqt9avh5lh7nsr35oehj3lso8b25t.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "hashtag.partyon.partner"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:774845460870:android:035bbec2433683f956bc07",
+        "android_client_info": {
+          "package_name": "hashtag.partyon.partner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "774845460870-019svh54gocam9vdhi5sl7b3o4hchr3b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "hashtag.partyon.partner",
+            "certificate_hash": "5c25ffa47c381f6ce3b6aa7dfe15e522a27a9247"
+          }
+        },
+        {
+          "client_id": "774845460870-1kl7j2fsm879lha651ppej2lfrvvbe2b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "hashtag.partyon.partner",
+            "certificate_hash": "149fbf7fd4c429938d39f35ae5f3255bbce71f6f"
+          }
+        },
+        {
+          "client_id": "774845460870-c5qeqoqls3nbgqe2dk7shnvioke9mhgv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "hashtag.partyon.partner",
+            "certificate_hash": "36f6ebd3c492f61a3a84d6ed13859760cd18e10f"
+          }
+        },
+        {
+          "client_id": "774845460870-2ibod8tf4l0bkallm78co6ohqis9i77l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABTFYsW2tcUjieHi3Lu4dUGr8ANXnmea4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "774845460870-2ibod8tf4l0bkallm78co6ohqis9i77l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "774845460870-8hlfqt9avh5lh7nsr35oehj3lso8b25t.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "hashtag.partyon.partner"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:774845460870:android:1ed31326b6d164a256bc07",
+        "android_client_info": {
+          "package_name": "hashtag.partyon.user"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "774845460870-2r87bfmordiqlbnla8rhv7degpi9ndqe.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "hashtag.partyon.user",
+            "certificate_hash": "149fbf7fd4c429938d39f35ae5f3255bbce71f6f"
+          }
+        },
+        {
+          "client_id": "774845460870-g4nlkkrp87o4p4r3i67t620omifs8577.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "hashtag.partyon.user",
+            "certificate_hash": "36f6ebd3c492f61a3a84d6ed13859760cd18e10f"
+          }
+        },
+        {
+          "client_id": "774845460870-l9a87bnngocohm234qls8gda9n49mopt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "hashtag.partyon.user",
+            "certificate_hash": "5c25ffa47c381f6ce3b6aa7dfe15e522a27a9247"
+          }
+        },
+        {
+          "client_id": "774845460870-2ibod8tf4l0bkallm78co6ohqis9i77l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABTFYsW2tcUjieHi3Lu4dUGr8ANXnmea4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "774845460870-2ibod8tf4l0bkallm78co6ohqis9i77l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "774845460870-8hlfqt9avh5lh7nsr35oehj3lso8b25t.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "hashtag.partyon.partner"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:774845460870:android:e43f522ffadc039156bc07",
+        "android_client_info": {
+          "package_name": "partyon.app.artist"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "774845460870-6stukmu3ravjfn5gbbvk4l937jktkhob.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.artist",
+            "certificate_hash": "5c25ffa47c381f6ce3b6aa7dfe15e522a27a9247"
+          }
+        },
+        {
+          "client_id": "774845460870-cvhoahdm5gdv1fpv13cktgv8iul68taa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.artist",
+            "certificate_hash": "62244ca48bc3e30d666834bf61bacf9c667cc635"
+          }
+        },
+        {
+          "client_id": "774845460870-mr7gd2ah3stskk8al88742icsm08qkg8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.artist",
+            "certificate_hash": "ad9dff327470b27a824795bffc769fb10d3d360e"
+          }
+        },
+        {
+          "client_id": "774845460870-2ibod8tf4l0bkallm78co6ohqis9i77l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABTFYsW2tcUjieHi3Lu4dUGr8ANXnmea4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "774845460870-2ibod8tf4l0bkallm78co6ohqis9i77l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "774845460870-8hlfqt9avh5lh7nsr35oehj3lso8b25t.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "hashtag.partyon.partner"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:774845460870:android:ca69ad243d6b742456bc07",
+        "android_client_info": {
+          "package_name": "partyon.app.club"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "774845460870-18sqai5ti5li386deilsp5b9b2ff3u77.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.club",
+            "certificate_hash": "36f6ebd3c492f61a3a84d6ed13859760cd18e10f"
+          }
+        },
+        {
+          "client_id": "774845460870-2kl7nj2rl2oa32kesp7a0vtrvigeuaka.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.club",
+            "certificate_hash": "ad9dff327470b27a824795bffc769fb10d3d360e"
+          }
+        },
+        {
+          "client_id": "774845460870-45hf4fgcum5iufvr9t9tjcoud9qittac.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.club",
+            "certificate_hash": "b5ba94ceb806ed369ea5b4e6379c98a7b0d63c52"
+          }
+        },
+        {
+          "client_id": "774845460870-47aq12c8h0a6jpn0l4v7rn1d3e5bq1td.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.club",
+            "certificate_hash": "8c2a44f7b0825f4eeb082085d01a3a227232b78a"
+          }
+        },
+        {
+          "client_id": "774845460870-6g9vgivg9bnhqs7r6gu60oln474ljtu9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.club",
+            "certificate_hash": "f8d3a08556f803d1856c4ff91ab311c19589f105"
+          }
+        },
+        {
+          "client_id": "774845460870-cg0dq3mqmjtv21ntaoi1qg3laf97urj7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.club",
+            "certificate_hash": "d9f625dd5862a57ad7e33014594c387a7c30890f"
+          }
+        },
+        {
+          "client_id": "774845460870-dbdj726djvc3c0q0rqjdo45l4mhrr8qr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.club",
+            "certificate_hash": "149fbf7fd4c429938d39f35ae5f3255bbce71f6f"
+          }
+        },
+        {
+          "client_id": "774845460870-glojvesd1mld3oiequi5559m50auelf6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.club",
+            "certificate_hash": "62244ca48bc3e30d666834bf61bacf9c667cc635"
+          }
+        },
+        {
+          "client_id": "774845460870-kbu7msjftij5kqiol36j1ep5k90lajmp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.club",
+            "certificate_hash": "5c25ffa47c381f6ce3b6aa7dfe15e522a27a9247"
+          }
+        },
+        {
+          "client_id": "774845460870-2ibod8tf4l0bkallm78co6ohqis9i77l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABTFYsW2tcUjieHi3Lu4dUGr8ANXnmea4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "774845460870-2ibod8tf4l0bkallm78co6ohqis9i77l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "774845460870-8hlfqt9avh5lh7nsr35oehj3lso8b25t.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "hashtag.partyon.partner"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:774845460870:android:3a4377f4cfc67e0956bc07",
+        "android_client_info": {
+          "package_name": "partyon.app.user"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "774845460870-4ql71phg2fhkoeq536hpk16ru1p8ullv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.user",
+            "certificate_hash": "ad9dff327470b27a824795bffc769fb10d3d360e"
+          }
+        },
+        {
+          "client_id": "774845460870-5fv34ch208v928tnck0pgd9hi2p4ptf7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.user",
+            "certificate_hash": "38d499cc8d1920b1de26d1ccf3eb79c469d3fae1"
+          }
+        },
+        {
+          "client_id": "774845460870-7bngeekjig7ugk0nsb903ud1ujcl3cve.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.user",
+            "certificate_hash": "62244ca48bc3e30d666834bf61bacf9c667cc635"
+          }
+        },
+        {
+          "client_id": "774845460870-e3bgeho6vr7pth59o9btufabhgmpd0bp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.user",
+            "certificate_hash": "b5ba94ceb806ed369ea5b4e6379c98a7b0d63c52"
+          }
+        },
+        {
+          "client_id": "774845460870-ncnnj1qf6qsqkre2c01j44rb697u156a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "partyon.app.user",
+            "certificate_hash": "5c25ffa47c381f6ce3b6aa7dfe15e522a27a9247"
+          }
+        },
+        {
+          "client_id": "774845460870-2ibod8tf4l0bkallm78co6ohqis9i77l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABTFYsW2tcUjieHi3Lu4dUGr8ANXnmea4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "774845460870-2ibod8tf4l0bkallm78co6ohqis9i77l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "774845460870-8hlfqt9avh5lh7nsr35oehj3lso8b25t.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "hashtag.partyon.partner"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

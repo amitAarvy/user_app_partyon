@@ -30,6 +30,7 @@ import 'organiser_event.dart';
 
 class BookEvents extends StatefulWidget {
   final String clubUID, clubID, eventID, organiserID, promoterID;
+  final bool isVenue;
 
   const BookEvents({
     this.clubID = "",
@@ -37,6 +38,7 @@ class BookEvents extends StatefulWidget {
     required this.eventID,
     this.organiserID = '',
     this.promoterID = '',
+    this.isVenue= false,
     super.key,
   });
 
@@ -175,12 +177,43 @@ ValueNotifier<String?> promoterId =ValueNotifier('');
           setState(() {});
         }
       });
-      if(widget.promoterID != null){
+      if(widget.isVenue == true){
+        var data = await FirebaseFirestore.instance.collection('VenueAnalysis').get();
+
+        List data1 = data.docs
+            .where((element) => element['prId'].toString() == widget.promoterID)
+            .where((e) => e['eventId'].toString() == widget.eventID.toString())
+            .toList();
+
+        if (data1.isNotEmpty) {
+          final docId = data1[0].id;
+          final currentView = data1[0]['noOfView'] ?? 0;
+
+          await FirebaseFirestore.instance.collection('VenueAnalysis').doc(docId).update({
+            "noOfView": currentView + 1,
+          });
+        } else {
+          print("No document found for prId ${widget.promoterID} and eventId ${widget.eventID}");
+        }
+      }
+      if (widget.promoterID != null) {
         var data = await FirebaseFirestore.instance.collection('PrAnalytics').get();
-        List data1 =  data.docs.where((element) => element['prId'].toString() ==widget.promoterID).where((e)=>e.id.toString()==widget.eventID.toString()).toList();
-        await FirebaseFirestore.instance.collection('PrAnalytics').doc(data1[0].id).update({
-          "noOfView": data1[0]['noOfView']+1
-        });
+
+        List data1 = data.docs
+            .where((element) => element['prId'].toString() == widget.promoterID)
+            .where((e) => e['eventId'].toString() == widget.eventID.toString())
+            .toList();
+
+        if (data1.isNotEmpty) {
+          final docId = data1[0].id;
+          final currentView = data1[0]['noOfView'] ?? 0;
+
+          await FirebaseFirestore.instance.collection('PrAnalytics').doc(docId).update({
+            "noOfView": currentView + 1,
+          });
+        } else {
+          print("No document found for prId ${widget.promoterID} and eventId ${widget.eventID}");
+        }
       }
      setState(() {});
     }catch(e){
@@ -864,6 +897,13 @@ ValueNotifier<String?> promoterId =ValueNotifier('');
                                                Provider.of<EntryTableController>(
                                                  context,
                                                  listen: false,
+                                               ).updateLeftTable(
+                                                 index,
+                                                 tableData?['tableLeft'],
+                                               );
+                                               Provider.of<EntryTableController>(
+                                                 context,
+                                                 listen: false,
                                                ).updateTableName(
                                                  index,
                                                  tableData?['tableName'],
@@ -1432,6 +1472,7 @@ ValueNotifier<String?> promoterId =ValueNotifier('');
                                  builder: (context, entryData, child) {
                                    double tablePrice = 0.0;
                                    for (int i = 0; i < data.numTable.length; i++) {
+                                     print('table data check is ${data.numTable}');
                                      tablePrice += data.priceTable[i] * data.numTable[i];
                                    }
                                    double entryPrice = 0;
@@ -1463,17 +1504,23 @@ ValueNotifier<String?> promoterId =ValueNotifier('');
                                          final organiserID = eventBox.get(widget.eventID) ?? '';
                                          //below code is commented to check promotion and organiser
                                          List tableData = [];
+                                         print('check table price is $tablePrice');
                                          if (tablePrice > 0) {
                                            tableData = List.generate(data.tableName.length, (int index) => []);
+                                           // tableData =  [];
                                            for (int i = 0; i < data.tableName.length; i++) {
+                                             print('check left booking is ${data.leftBooking[i]}');
+                                             print('check left booking is ${data.numTable[i]}');
+                                             print('check left booking is ${data.numTable[i]??0 - data.leftBooking[i]??0 }');
                                              tableData[i] = {
                                                'tableID': randomAlphaNumeric(5).toUpperCase(),
                                                'tableName': data.tableName[i],
                                                'tableNum': data.numTable[i],
-                                               'tableLeft': data.numTable[i],
+                                               'tableLeft': data.numTable[i]??0 - data.leftBooking[i]??0,
                                                'tablePrice': data.priceTable[i]
                                              };
                                            }
+                                           print('checkt table data is ${tableData}');
                                          }
                                          int totalEntranceCount = 0;
                                          int totalTableCount = 0;
@@ -1498,12 +1545,12 @@ ValueNotifier<String?> promoterId =ValueNotifier('');
                                              Payments(
                                                couponCodeDetail: value,
                                                amount: couponCodeAmount,
-                                               tableDataList: tableData,
+                                               tableDataList: tableData.where((element) => element['tableName'].toString() !='').toList(),
                                                eventID: widget.eventID,
                                                clubID: widget.clubID,
                                                clubUID: widget.clubUID,
                                                entryList: bookingProvider.getBookingList,
-                                               tableList: tableData,
+                                               tableList: tableData.where((element) => element['tableName'].toString() !='').toList(),
                                                promoterID: prId.toString(),
                                                organiserID: widget.organiserID,
                                                totalEntranceCount: totalEntranceCount,
@@ -1514,7 +1561,7 @@ ValueNotifier<String?> promoterId =ValueNotifier('');
                                              bookingProvider.getTableBookingList.isNotEmpty) {
                                            if (!context.mounted) return;
                                            paymentSuccess(context, null,
-                                               tableDataList: tableData,
+                                               tableDataList: tableData.where((element) => element['tableName'].toString() !='').toList(),
                                                amount: amount,
                                                couponDetail: value,
                                                clubUID: widget.clubUID,

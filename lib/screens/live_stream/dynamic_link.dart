@@ -78,40 +78,118 @@ class FirebaseDynamicLinkEvent {
         String organiserID = deepLink.queryParameters['organiserID'] ?? '';
         String promoterID = deepLink.queryParameters['promoterID'] ?? '';
         String clubUID = deepLink.queryParameters['clubUID'] ?? '';
+        String isVenue = deepLink.queryParameters['isVenue'] ?? '';
         String fallBackUrl = deepLink.queryParameters['fallbackUrl'] ?? '';
+        print('check it event id ${eventID}');
+        print('check it event id ${organiserID}');
+        print('check it event id ${promoterID}');
+        print('check it event id ${clubUID}');
+        print('check it event id ${isVenue}');
 
         if (eventID.isNotEmpty) {
-          if(promoterID != null){
-            var data = await FirebaseFirestore.instance.collection('PrAnalytics').get();
-          List data1 =  data.docs.where((element) => element['prId'].toString() ==promoterID).where((e)=>e.id.toString()==eventID.toString()).toList();
-            final docData = data1[0].data() as Map<String, dynamic>;
-            if(docData.containsKey('noOfClickList') ==true){
+          if(isVenue.toString() == 'true'){
+            final querySnapshot = await FirebaseFirestore.instance.collection('VenueAnalysis').get();
 
-            List noOfClick = data1[0]['noOfClickList']??[];
-            String todayString = DateFormat('yyyy-MM-dd').format(DateTime.now());
-            for (int i = 0; i < noOfClick.length; i++) {
-              var entryDate = (noOfClick[i]['date'] as Timestamp).toDate();
-              String entryDateStr = DateFormat('yyyy-MM-dd').format(entryDate);
-              if (entryDateStr.toString() == todayString.toString()) {
-                noOfClick[i]['click'] = int.parse(noOfClick[i]['click'].toString()) + 1;
+            final matchingDocs = querySnapshot.docs.where((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+              return data['isVenue'].toString() == 'true' &&
+                  data['eventId'].toString() == eventID;
+            }).toList();
+
+            if (matchingDocs.isEmpty) {
+              print("No matching document found.");
+              return;
+            }
+
+            final doc = matchingDocs.first;
+            final docId = doc.id;
+            final docData = doc.data() as Map<String, dynamic>;
+
+            final currentClick = (docData['noOfClick'] ?? 0) as int;
+            final List<dynamic> noOfClickList = List.from(docData['noOfClickList'] ?? []);
+
+            final String todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+            bool foundToday = false;
+
+            for (int i = 0; i < noOfClickList.length; i++) {
+              final item = noOfClickList[i];
+              final itemDate = (item['date'] as Timestamp).toDate();
+              final itemStr = DateFormat('yyyy-MM-dd').format(itemDate);
+
+              if (itemStr == todayStr) {
+                noOfClickList[i]['click'] = (item['click'] ?? 0) + 1;
+                foundToday = true;
                 break;
               }
             }
-            await FirebaseFirestore.instance.collection('PrAnalytics').doc(data1[0].id).update({
-              "noOfClick": data1[0]['noOfClick']+1,
-              "noOfClickList":noOfClick
-            });
-          }else{
-              List noOfClick = [];
-                noOfClick.add({
-                  'date': DateTime.now(),
-                  'click': 1,
-                });
-            await FirebaseFirestore.instance.collection('PrAnalytics').doc(data1[0].id).update({
-              "noOfClick": data1[0]['noOfClick']+1,
-              "noOfClickList":noOfClick
-            });
+
+            if (!foundToday) {
+              noOfClickList.add({
+                'date': Timestamp.now(),
+                'click': 1,
+              });
             }
+
+            await FirebaseFirestore.instance
+                .collection('VenueAnalysis')
+                .doc(docId)
+                .update({
+              'noOfClick': currentClick + 1,
+              'noOfClickList': noOfClickList,
+            });
+          }
+          if (promoterID != null ) {
+            final querySnapshot = await FirebaseFirestore.instance.collection('PrAnalytics').get();
+
+            final matchingDocs = querySnapshot.docs.where((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+              return data['prId'].toString() == promoterID &&
+                  data['eventId'].toString() == eventID;
+            }).toList();
+
+            if (matchingDocs.isEmpty) {
+              print("No matching document found.");
+              return;
+            }
+
+            final doc = matchingDocs.first;
+            final docId = doc.id;
+            final docData = doc.data() as Map<String, dynamic>;
+
+            final currentClick = (docData['noOfClick'] ?? 0) as int;
+            final List<dynamic> noOfClickList = List.from(docData['noOfClickList'] ?? []);
+
+            final String todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+            bool foundToday = false;
+
+            for (int i = 0; i < noOfClickList.length; i++) {
+              final item = noOfClickList[i];
+              final itemDate = (item['date'] as Timestamp).toDate();
+              final itemStr = DateFormat('yyyy-MM-dd').format(itemDate);
+
+              if (itemStr == todayStr) {
+                noOfClickList[i]['click'] = (item['click'] ?? 0) + 1;
+                foundToday = true;
+                break;
+              }
+            }
+
+            if (!foundToday) {
+              noOfClickList.add({
+                'date': Timestamp.now(),
+                'click': 1,
+              });
+            }
+
+            await FirebaseFirestore.instance
+                .collection('PrAnalytics')
+                .doc(docId)
+                .update({
+              'noOfClick': currentClick + 1,
+              'noOfClickList': noOfClickList,
+            });
           }
           Box eventBox = await HiveDB.hiveOpenEventBox();
           HiveDB.putKey(eventBox, eventID, organiserID);
@@ -121,6 +199,7 @@ class FirebaseDynamicLinkEvent {
             eventID: eventID,
             organiserID: organiserID,
             promoterID: promoterID,
+            isVenue: isVenue.toString()=='true'?true:false,
            )
          );
         } else {

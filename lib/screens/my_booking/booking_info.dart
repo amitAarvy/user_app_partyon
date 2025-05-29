@@ -3,6 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:user/screens/bottom-screens.dart';
@@ -197,6 +198,214 @@ class _BookingInfoState extends State<BookingInfo> {
                       eventId: widget.eventId
 
                     ),
+                    SizedBox(height: 10,),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: FutureBuilder<DocumentSnapshot>(
+                        future: FirebaseFirestore.instance
+                            .collection('Club')
+                            .doc(widget.clubUID)
+                            .get(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<DocumentSnapshot> snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return SizedBox(
+                              height: Get.height,
+                              width: Get.width,
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.orange,
+                                ),
+                              ),
+                            );
+                          } else if (!snapshot.hasData) {
+                            return SizedBox(
+                              height: Get.height,
+                              width: Get.width,
+                              child: Center(
+                                child: Text(
+                                  'No Data Found',
+                                  style: GoogleFonts.ubuntu(
+                                    color: Colors.white,
+                                    fontSize: 45.sp,
+                                  ),
+                                ),
+                              ),
+                            );
+                          } else {
+                            return
+                              FutureBuilder(
+                                        future: FirebaseFirestore.instance
+                        .collection('Events')
+                        .doc(widget.eventId)
+                        .get(),
+                                        builder: (BuildContext context,
+                                        AsyncSnapshot<DocumentSnapshot> snap) {
+                      if (snap.connectionState == ConnectionState.waiting) {
+                        return SizedBox(
+                          height: Get.height,
+                          width: Get.width,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.orange,
+                            ),
+                          ),
+                        );
+                      }
+                      DateTime startTime = snap.data?.get('startTime').toDate();
+
+                      return  SizedBox(
+                        child: Column(
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text("Venue",
+                                  style: GoogleFonts.adamina(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                      decorationColor: Colors.white)),
+                            ),
+                            SizedBox(
+                              height: 20.h,
+                            ),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(snapshot.data?.get("clubName"),
+                                  style: GoogleFonts.adamina(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                      decorationColor: Colors.white)),
+                            ),
+
+
+                            Row(
+                              children: [
+                                Icon(Icons.door_back_door_outlined, color: Colors.white, size: 70.h),
+                                const SizedBox(width: 5),
+                                Text("Doors open at ${TimeOfDay(hour: startTime.hour, minute: startTime.minute).hourOfPeriod.toString()}:${TimeOfDay(hour: startTime.hour, minute: startTime.minute).minute.toString().padLeft(2, '0')} ${TimeOfDay(hour: startTime.hour, minute: startTime.minute).period.name}", style: GoogleFonts.adamina(fontSize: 15, color: Colors.white)),
+                              ],
+                            ),
+
+                            Row(
+                              children: [
+                                Icon(Icons.location_on, color: Colors.white, size: 70.h),
+                                const SizedBox(width: 5),
+                                Text( "${snapshot.data?.get("address")}, ${snapshot.data?.get("area")}, ${snapshot.data?.get("city")}, ${snapshot.data?.get("state")}", style: GoogleFonts.adamina(fontSize: 15, color: Colors.white)),
+                              ],
+                            ),
+                            SizedBox(height: 10,),
+
+                            GestureDetector(
+                              onTap:() async{
+                                try {
+                                  await FirebaseFirestore.instance
+                                      .collection('Club')
+                                      .doc(widget.clubUID)
+                                      .get()
+                                      .then((data) {
+                                    if (data.exists) {
+                                      openMap(data.data()?['latitude'], data.data()?['longitude']);
+                                    }
+                                  });
+                                } catch (e) {
+                                  Fluttertoast.showToast(msg: 'Something went wrong');
+                                }
+                              },
+                              child: Container(
+                                height:200,
+                                margin: EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[800],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Stack(
+                                  children: [
+                                    Center(
+                                      child: Text(
+                                        "${snapshot.data?.get("address")}, ${snapshot.data?.get("area")}, ${snapshot.data?.get("city")}, ${snapshot.data?.get("state")}",
+                                        style: TextStyle(color: Colors.white70, fontSize: 16),
+                                      ),
+                                    ),
+                                    const Align(
+                                      alignment: Alignment.center,
+                                      child: Icon(
+                                        Icons.location_on,
+                                        color: Colors.yellow,
+                                        size: 40,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                          // children: [
+                          //   Text(
+                          //     'Club Details',
+                          //     style: GoogleFonts.ubuntu(
+                          //       color: Colors.amber,
+                          //       fontSize: 60.sp,
+                          //       fontWeight: FontWeight.bold,
+                          //     ),
+                          //   ).paddingAll(40.sp),
+                          //   Table(
+                          //     border: TableBorder.all(
+                          //       borderRadius: BorderRadius.circular(20),
+                          //       color: Colors.amber,
+                          //       style: BorderStyle.solid,
+                          //     ),
+                          //     children: [
+                          //       TableRow(
+                          //         children: [
+                          //           Text(
+                          //             'Club Name',
+                          //             style: GoogleFonts.ubuntu(
+                          //               color: Colors.orange,
+                          //               fontSize: 45.sp,
+                          //             ),
+                          //           ).paddingAll(40.w),
+                          //           Text(
+                          //             "${snapshot.data?.get("clubName")}",
+                          //             style: GoogleFonts.ubuntu(
+                          //               color: Colors.white,
+                          //               fontSize: 45.sp,
+                          //             ),
+                          //           ).paddingAll(40.w),
+                          //         ],
+                          //       ),
+                          //       TableRow(
+                          //         children: [
+                          //           Text(
+                          //             'Club Venue',
+                          //             style: GoogleFonts.ubuntu(
+                          //               color: Colors.orange,
+                          //               fontSize: 45.sp,
+                          //             ),
+                          //           ).paddingAll(40.w),
+                          //           Text(
+                          //             "${snapshot.data?.get("address")}, ${snapshot.data?.get("area")}, ${snapshot.data?.get("city")}, ${snapshot.data?.get("state")}",
+                          //             style: GoogleFonts.ubuntu(
+                          //               color: Colors.white,
+                          //               fontSize: 45.sp,
+                          //             ),
+                          //           ).paddingAll(40.w),
+                          //         ],
+                          //       ),
+                          //     ],
+                          //   ).paddingAll(40.w),
+                          // ],
+                        ),
+                      );
+                                        }
+
+
+                              );
+                          }
+                        },
+                      ),
+                    ),
                     Table(
                       border: TableBorder.all(
                         borderRadius: BorderRadius.circular(20),
@@ -206,6 +415,11 @@ class _BookingInfoState extends State<BookingInfo> {
                         tableRowWidget(
                           title: 'Booking ID',
                           value: "${snapshot.data?.get("bookingID")}",
+                        ),
+                        tableRowWidget(
+                          title: 'Category',
+                          value:
+                          "${snapshot.data?.get("entryList")[0]['categoryName']}",
                         ),
                         tableRowWidget(
                           title: 'Total Entry',
@@ -430,142 +644,50 @@ class _BookingInfoState extends State<BookingInfo> {
                   ),
                 );
               } else {
-                return Column(
-                  children: [
-                    Text(
-                      'User Details',
-                      style: GoogleFonts.ubuntu(
-                        color: Colors.amber,
-                        fontSize: 60.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ).paddingAll(40.sp),
-                    Table(
-                      border: TableBorder.all(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.amber,
-                        style: BorderStyle.solid,
-                      ),
-                      children: [
-                        TableRow(
-                          children: [
-                            Text(
-                              'User Name',
-                              style: GoogleFonts.ubuntu(
-                                color: Colors.orange,
-                                fontSize: 45.sp,
-                              ),
-                            ).paddingAll(40.w),
-                            Text(
-                              "${snapshot.data?.get("userName").toString().capitalizeFirstOfEach}",
-                              style: GoogleFonts.ubuntu(
-                                color: Colors.white,
-                                fontSize: 45.sp,
-                              ),
-                            ).paddingAll(40.w),
-                          ],
-                        ),
-                      ],
-                    ).paddingAll(40.w),
-                  ],
-                );
+                return Offstage();
+                //   Column(
+                //   children: [
+                //     Text(
+                //       'User Details',
+                //       style: GoogleFonts.ubuntu(
+                //         color: Colors.amber,
+                //         fontSize: 60.sp,
+                //         fontWeight: FontWeight.bold,
+                //       ),
+                //     ).paddingAll(40.sp),
+                //     Table(
+                //       border: TableBorder.all(
+                //         borderRadius: BorderRadius.circular(20),
+                //         color: Colors.amber,
+                //         style: BorderStyle.solid,
+                //       ),
+                //       children: [
+                //         TableRow(
+                //           children: [
+                //             Text(
+                //               'User Name',
+                //               style: GoogleFonts.ubuntu(
+                //                 color: Colors.orange,
+                //                 fontSize: 45.sp,
+                //               ),
+                //             ).paddingAll(40.w),
+                //             Text(
+                //               "${snapshot.data?.get("userName").toString().capitalizeFirstOfEach}",
+                //               style: GoogleFonts.ubuntu(
+                //                 color: Colors.white,
+                //                 fontSize: 45.sp,
+                //               ),
+                //             ).paddingAll(40.w),
+                //           ],
+                //         ),
+                //       ],
+                //     ).paddingAll(40.w),
+                //   ],
+                // );
               }
             },
           ),
-          FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance
-                .collection('Club')
-                .doc(widget.clubUID)
-                .get(),
-            builder: (BuildContext context,
-                AsyncSnapshot<DocumentSnapshot> snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return SizedBox(
-                  height: Get.height,
-                  width: Get.width,
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.orange,
-                    ),
-                  ),
-                );
-              } else if (!snapshot.hasData) {
-                return SizedBox(
-                  height: Get.height,
-                  width: Get.width,
-                  child: Center(
-                    child: Text(
-                      'No Data Found',
-                      style: GoogleFonts.ubuntu(
-                        color: Colors.white,
-                        fontSize: 45.sp,
-                      ),
-                    ),
-                  ),
-                );
-              } else {
-                return SizedBox(
-                  child: Column(
-                    children: [
-                      Text(
-                        'Club Details',
-                        style: GoogleFonts.ubuntu(
-                          color: Colors.amber,
-                          fontSize: 60.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ).paddingAll(40.sp),
-                      Table(
-                        border: TableBorder.all(
-                          borderRadius: BorderRadius.circular(20),
-                          color: Colors.amber,
-                          style: BorderStyle.solid,
-                        ),
-                        children: [
-                          TableRow(
-                            children: [
-                              Text(
-                                'Club Name',
-                                style: GoogleFonts.ubuntu(
-                                  color: Colors.orange,
-                                  fontSize: 45.sp,
-                                ),
-                              ).paddingAll(40.w),
-                              Text(
-                                "${snapshot.data?.get("clubName")}",
-                                style: GoogleFonts.ubuntu(
-                                  color: Colors.white,
-                                  fontSize: 45.sp,
-                                ),
-                              ).paddingAll(40.w),
-                            ],
-                          ),
-                          TableRow(
-                            children: [
-                              Text(
-                                'Club Venue',
-                                style: GoogleFonts.ubuntu(
-                                  color: Colors.orange,
-                                  fontSize: 45.sp,
-                                ),
-                              ).paddingAll(40.w),
-                              Text(
-                                "${snapshot.data?.get("address")}, ${snapshot.data?.get("area")}, ${snapshot.data?.get("city")}, ${snapshot.data?.get("state")}",
-                                style: GoogleFonts.ubuntu(
-                                  color: Colors.white,
-                                  fontSize: 45.sp,
-                                ),
-                              ).paddingAll(40.w),
-                            ],
-                          ),
-                        ],
-                      ).paddingAll(40.w),
-                    ],
-                  ),
-                );
-              }
-            },
-          ),
+
         ],
       ),
     ),

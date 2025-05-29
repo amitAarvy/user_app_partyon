@@ -17,7 +17,8 @@ import '../../../events/book_events.dart';
 import '../../controller/home_controller.dart';
 
 class PopularTechnoList extends StatefulWidget {
-  const PopularTechnoList({super.key});
+  final String? type;
+  const PopularTechnoList({super.key, this.type});
 
   @override
   State<PopularTechnoList> createState() => _PopularTechnoListState();
@@ -42,7 +43,7 @@ class _PopularTechnoListState extends State<PopularTechnoList> {
   void fetchTechnoListEventData() async{
     QuerySnapshot data = await FirebaseFirestore.instance
         .collection('Events')
-        .where('genre', isEqualTo: 'Techno')
+        .where('genre', isEqualTo:widget.type != null?widget.type: 'Techno')
         .where('isActive', isEqualTo: true)
         .get();
     QuerySnapshot clubData =await FirebaseFirestore.instance
@@ -77,7 +78,7 @@ class _PopularTechnoListState extends State<PopularTechnoList> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text("Popular Techno Events", style: TextStyle(fontSize: 19)),
+        title:  Text("Popular ${widget.type !=null?widget.type:'Techno'} Events", style: TextStyle(fontSize: 19)),
         centerTitle: true,
       ),
       body: SafeArea(

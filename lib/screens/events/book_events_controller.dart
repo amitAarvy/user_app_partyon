@@ -63,8 +63,8 @@ class TableController extends ChangeNotifier {
 class EntryTableController extends ChangeNotifier {
   List numTable = List.generate(50, (int index) => 0);
   List priceTable = List.generate(50, (int index) => 0.0);
-
   List tableName = List.generate(50, (int index) => '');
+  List leftBooking = List.generate(50, (int index) => '');
 
   updateNumTable(int index, var val) {
     numTable[index] = val;
@@ -78,6 +78,10 @@ class EntryTableController extends ChangeNotifier {
 
   updatePriceTable(int index, var val) {
     priceTable[index] = val;
+    notifyListeners();
+  }
+  updateLeftTable(int index, var val) {
+    leftBooking[index] = val;
     notifyListeners();
   }
 }

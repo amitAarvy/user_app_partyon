@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -68,16 +69,20 @@ class _HomeViewState extends State<HomeView> {
 
 
   initHome() async {
-    await getCity(context, homeController).whenComplete(EasyLoading.dismiss);
-    await getClubList();
-    getFav();
-    fetchTonightEventData();
-    fetchLiveBandsEventData();
-    fetchNextWeekEventData();
-    fetchUpcomingMonthEventData();
-    fetchTechnoListEventData();
-    fetchCommercialEventData();
-    fetchThisWeekEventData();
+    try {
+      await getCity(context, homeController).whenComplete(EasyLoading.dismiss);
+      await getClubList();
+      getFav();
+      fetchTonightEventData();
+      fetchLiveBandsEventData();
+      fetchNextWeekEventData();
+      fetchUpcomingMonthEventData();
+      fetchTechnoListEventData();
+      fetchCommercialEventData();
+      fetchThisWeekEventData();
+    }catch(e){
+      log('error is check ${e}');
+    }
   }
 
   List nextWeekEventData = [];
@@ -222,119 +227,143 @@ class _HomeViewState extends State<HomeView> {
       return eventDate.isAfter(weekStart) && eventDate.isBefore(weekEnds);
     }).toList();    thisWeekEventData.sort((a, b) => a['date'].toDate().compareTo(b['date'].toDate()));
     thisWeekEventData = thisWeekEventData.sublist(0, thisWeekEventData.length >=10 ? 10 : thisWeekEventData.length);
+    thisWeekEventData = thisWeekEventData.where((element) {
+      DateTime eventDate = element['date'].toDate();
+      return eventDate.isAfter(DateTime.now());
+    },).toList();
     setState(() {});
   }
   void fetchNextWeekEventData() async{
-    QuerySnapshot data = await FirebaseFirestore.instance
-        .collection('Events')
-        .where('isActive', isEqualTo: true)
-    // .where('date', isGreaterThanOrEqualTo: week)
-    // .limit(4)
-        .get();
-    QuerySnapshot clubData =await FirebaseFirestore.instance
-        .collection("Club")
-        .where("businessCategory", isEqualTo: 1)
-        .get();
-    nextWeekEventData = data.docs;
-    print('check list data is ${nextWeekEventData}');
-    if(hc.city =='All City'){
-      nextWeekEventData = data.docs.where((element) {
-        return clubData.docs
-            .map((ele) => ele['clubUID'])
-            .contains(element['clubUID']);
-      }).toList();
+    try {
+      QuerySnapshot data = await FirebaseFirestore.instance
+          .collection('Events')
+          .where('isActive', isEqualTo: true)
+      // .where('date', isGreaterThanOrEqualTo: week)
+      // .limit(4)
+          .get();
+      QuerySnapshot clubData = await FirebaseFirestore.instance
+          .collection("Club")
+          .where("businessCategory", isEqualTo: 1)
+          .get();
+      nextWeekEventData = data.docs;
+      print('check list data is ${nextWeekEventData}');
+      if (hc.city == 'All City') {
+        nextWeekEventData = data.docs.where((element) {
+          return clubData.docs
+              .map((ele) => ele['clubUID'])
+              .contains(element['clubUID']);
+        }).toList();
+      } else {
+        nextWeekEventData = data.docs.where((element) {
+          return clubData.docs.where((e) =>
+          e['city'] == hc.city ||
+              e['locality'] == hc.city ||
+              hc.showFav == true)
+              .map((ele) => ele['clubUID'])
+              .contains(element['clubUID']);
+        }).toList();
+      }
 
-    }else{
-      nextWeekEventData = data.docs.where((element) {
-        return clubData.docs.where((e)=>e['city'] == hc.city ||
-            e['locality'] == hc.city ||
-            hc.showFav == true)
-            .map((ele) => ele['clubUID'])
-            .contains(element['clubUID']);
+
+      DateTime now = DateTime.now();
+      int currentDay = now.weekday;
+      int daysToNextMonday = (currentDay == 7) ? 1 : (8 - currentDay);
+      DateTime nextMonday = now.add(Duration(days: daysToNextMonday));
+      DateTime nextSunday = nextMonday.add(Duration(days: 6));
+      nextWeekEventData = nextWeekEventData.where((element) {
+        DateTime eventDate = element['date'].toDate();
+        return eventDate.isAfter(nextMonday.subtract(Duration(days: 1))) &&
+            eventDate.isBefore(nextSunday.add(Duration(days: 1)));
       }).toList();
+      nextWeekEventData.sort((a, b) =>
+          a['date'].toDate().compareTo(b['date'].toDate()));
+      print('check list data is 2${nextWeekEventData}');
+      setState(() {});
+    }catch(e){
+      log(e.toString());
     }
-
-
-
-    DateTime now = DateTime.now();
-    int currentDay = now.weekday;
-    int daysToNextMonday = (currentDay == 7) ? 1 : (8 - currentDay);
-    DateTime nextMonday = now.add(Duration(days: daysToNextMonday));
-    DateTime nextSunday = nextMonday.add(Duration(days: 6));
-    nextWeekEventData = nextWeekEventData.where((element) {
-      DateTime eventDate = element['date'].toDate();
-      return eventDate.isAfter(nextMonday.subtract(Duration(days: 1))) && eventDate.isBefore(nextSunday.add(Duration(days: 1)));
-    }).toList();
-    nextWeekEventData.sort((a, b) => a['date'].toDate().compareTo(b['date'].toDate()));
-    print('check list data is 2${nextWeekEventData}');
-    setState(() {});
   }
   void fetchLiveBandsEventData() async{
-    QuerySnapshot data = await FirebaseFirestore.instance
-        .collection('Events')
-        .where('isActive', isEqualTo: true)
-        .where('bandType', isEqualTo: "Live band")
-    // .where('date', isGreaterThanOrEqualTo: today)
-        .get();
+    try {
+      QuerySnapshot data = await FirebaseFirestore.instance
+          .collection('Events')
+          .where('isActive', isEqualTo: true)
+          .where('bandType', isEqualTo: "Live band")
+      // .where('date', isGreaterThanOrEqualTo: today)
+          .get();
 
-    QuerySnapshot clubData =await FirebaseFirestore.instance
-        .collection("Club")
-        .where("businessCategory", isEqualTo: 1)
-        .get();
-    liveBandsEventData = data.docs;
-    if(hc.city =='All City'){
-      liveBandsEventData = data.docs.where((element) {
-        return clubData.docs
-            .map((ele) => ele['clubUID'])
-            .contains(element['clubUID']);
-      }).toList();
-    }else{
-      liveBandsEventData = data.docs.where((element) {
-        return clubData.docs.where((e)=>e['city'] == hc.city ||
-            e['locality'] == hc.city ||
-            hc.showFav == true)
-            .map((ele) => ele['clubUID'])
-            .contains(element['clubUID']);
-      }).toList();
+      QuerySnapshot clubData = await FirebaseFirestore.instance
+          .collection("Club")
+          .where("businessCategory", isEqualTo: 1)
+          .get();
+      liveBandsEventData = data.docs;
+      if (hc.city == 'All City') {
+        liveBandsEventData = data.docs.where((element) {
+          return clubData.docs
+              .map((ele) => ele['clubUID'])
+              .contains(element['clubUID']);
+        }).toList();
+      } else {
+        liveBandsEventData = data.docs.where((element) {
+          return clubData.docs.where((e) =>
+          e['city'] == hc.city ||
+              e['locality'] == hc.city ||
+              hc.showFav == true)
+              .map((ele) => ele['clubUID'])
+              .contains(element['clubUID']);
+        }).toList();
+      }
+
+      liveBandsEventData = liveBandsEventData.where((element) =>
+          element['date'].toDate().isAfter(today)).toList();
+      liveBandsEventData.sort((a, b) =>
+          a['date'].toDate().compareTo(b['date'].toDate()));
+      liveBandsEventData = liveBandsEventData.sublist(
+          0, liveBandsEventData.length >= 10 ? 10 : liveBandsEventData!.length);
+      setState(() {});
+    }catch(e){
+      log('error is check ${e}');
     }
-
-    liveBandsEventData = liveBandsEventData.where((element) => element['date'].toDate().isAfter(today)).toList();
-    liveBandsEventData.sort((a, b) => a['date'].toDate().compareTo(b['date'].toDate()));
-    liveBandsEventData = liveBandsEventData.sublist(0, liveBandsEventData.length >=10 ? 10 : liveBandsEventData!.length);
-    setState(() {});
   }
 
   void fetchTonightEventData() async{
-    QuerySnapshot data = await FirebaseFirestore.instance
-        .collection('Events')
-        .where('isActive', isEqualTo: true)
-        .where('date', isEqualTo: today)
-        .get();
-    QuerySnapshot clubData =await FirebaseFirestore.instance
-        .collection("Club")
-        .where("businessCategory", isEqualTo: 1)
-        .get();
-    tonightData = data.docs;
-    if(hc.city =='All City'){
-      tonightData = data.docs.where((element) {
-        return clubData.docs
-            .map((ele) => ele['clubUID'])
-            .contains(element['clubUID']);
-      }).toList();
-    }else{
-      tonightData = data.docs.where((element) {
-        return clubData.docs.where((e)=>e['city'] == hc.city ||
-            e['locality'] == hc.city ||
-            hc.showFav == true)
-            .map((ele) => ele['clubUID'])
-            .contains(element['clubUID']);
-      }).toList();
-    }
+    try {
+      QuerySnapshot data = await FirebaseFirestore.instance
+          .collection('Events')
+          .where('isActive', isEqualTo: true)
+          .where('date', isEqualTo: today)
+          .get();
+      QuerySnapshot clubData = await FirebaseFirestore.instance
+          .collection("Club")
+          .where("businessCategory", isEqualTo: 1)
+          .get();
+      tonightData = data.docs;
+      if (hc.city == 'All City') {
+        tonightData = data.docs.where((element) {
+          return clubData.docs
+              .map((ele) => ele['clubUID'])
+              .contains(element['clubUID']);
+        }).toList();
+      } else {
+        tonightData = data.docs.where((element) {
+          return clubData.docs.where((e) =>
+          e['city'] == hc.city ||
+              e['locality'] == hc.city ||
+              hc.showFav == true)
+              .map((ele) => ele['clubUID'])
+              .contains(element['clubUID']);
+        }).toList();
+      }
 
-    tonightData.sort((a, b) => a['date'].toDate().compareTo(b['date'].toDate()));
-    print('length list of2 ${tonightData.length}');
-    tonightData = tonightData.sublist(0, tonightData.length >=10 ? 10 : tonightData.length);
-    setState(() {});
+      tonightData.sort((a, b) =>
+          a['date'].toDate().compareTo(b['date'].toDate()));
+      print('length list of2 ${tonightData.length}');
+      tonightData = tonightData.sublist(
+          0, tonightData.length >= 10 ? 10 : tonightData.length);
+      setState(() {});
+    }catch(e){
+      log(e.toString());
+    }
   }
   List globalSetting =[];
 
@@ -865,7 +894,7 @@ class _HomeViewState extends State<HomeView> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             technoUi('assets/techno.png',callBack: (){Get.to(() => const PopularTechnoList());}),
-                            technoUi('assets/rock.png',callBack: (){}),
+                            technoUi('assets/rock.png',callBack: (){Get.to(() => const PopularTechnoList(type: 'Rock',));}),
                             technoUi('assets/liveBands.png',callBack: (){Get.to(() => BrowseLiveBandsEventsList());}),
                           ],
                         ),
@@ -873,9 +902,9 @@ class _HomeViewState extends State<HomeView> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            technoUi('assets/hipHop.png',callBack: (){}),
+                            technoUi('assets/hipHop.png',callBack: (){Get.to(() => const PopularTechnoList(type: 'Rap/Hip-Hop',));}),
                             technoUi('assets/commerical.png',callBack: (){ Get.to(() => const PopularCommercialList());}),
-                            technoUi('assets/afroHouse.png',callBack: (){}),
+                            technoUi('assets/afroHouse.png',callBack: (){Get.to(() => const PopularTechnoList(type: 'House',));}),
                           ],
                         ),
                       ],
@@ -883,14 +912,14 @@ class _HomeViewState extends State<HomeView> {
                   ),
                   SizedBox(height: 10,),
 
-                  if(nextWeekEventData.isNotEmpty)...[
-                    HeadingWidget(
-                      headingTitle: "Next Week",
-                      onTap: () => Get.to(() =>  NextWeekList()),
-                      buttonText: " > ",
-                    ),
-                    NextWeekView(nextWeekEventData:nextWeekEventData ,),
-                  ],
+                  // if(nextWeekEventData.isNotEmpty)...[
+                  //   HeadingWidget(
+                  //     headingTitle: "Next Week",
+                  //     onTap: () => Get.to(() =>  NextWeekList()),
+                  //     buttonText: " > ",
+                  //   ),
+                  //   NextWeekView(nextWeekEventData:nextWeekEventData ,),
+                  // ],
 
 
                   // HeadingWidget(

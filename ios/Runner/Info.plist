@@ -16,6 +16,13 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>Hashtag PartyOn</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>This app requires access to the photo library for events images.</string>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+      <string>sms</string>
+      <string>tel</string>
+    </array>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

@@ -9,6 +9,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -176,7 +177,8 @@ class _InitPageState extends State<InitPage> {
       if (FirebaseAuth.instance.currentUser != null) {
         getHome();
       } else {
-        Get.off(const PhoneLogin());
+        // Get.off(const PhoneLogin());
+        Get.offAll(AnonymousLogin());
       }
     });
     super.initState();
@@ -185,3 +187,45 @@ class _InitPageState extends State<InitPage> {
   @override
   Widget build(BuildContext context) => Container();
 }
+
+
+class AnonymousLogin extends StatefulWidget {
+  const AnonymousLogin({super.key});
+
+  @override
+  State<AnonymousLogin> createState() => _AnonymousLoginState();
+}
+
+class _AnonymousLoginState extends State<AnonymousLogin> {
+  Anonymous()async{
+    UserCredential user = await FirebaseAuth.instance.signInAnonymously();
+    if (user.user != null) {
+      Get.off(
+        UserInfoData(
+          email:'',
+          isPhone: true,
+          isAnonymous: true,
+        ),
+      );
+    } else {
+      await Fluttertoast.showToast(msg: 'User does not exist');
+    }
+
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Anonymous();
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(child: CircularProgressIndicator(color: Colors.orangeAccent,),),
+
+    );
+  }
+}
+

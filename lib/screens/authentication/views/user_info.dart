@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -26,8 +27,9 @@ class UserInfoData extends StatefulWidget {
   final String email;
   final bool isPhone;
   final bool isProfile;
+  final bool isAnonymous;
 
-  const UserInfoData({this.isPhone = false, required this.email,this.isProfile =false, super.key});
+  const UserInfoData({this.isPhone = false, required this.email,this.isProfile =false,this.isAnonymous=false, super.key});
 
   @override
   State<UserInfoData> createState() => _UserInfoDataState();
@@ -293,6 +295,7 @@ class _UserInfoDataState extends State<UserInfoData> {
     });
 }
 
+TextEditingController _phoneController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     // final TextEditingController emailController =
@@ -380,6 +383,36 @@ class _UserInfoDataState extends State<UserInfoData> {
                 ),
               ),
               textField('Enter Name', _userName,),
+              if(widget.isAnonymous)
+              SizedBox(height: 5,),
+              if(widget.isAnonymous)
+                textField('Enter mobile number', _phoneController,isNum: true),
+              // Container(
+              //   decoration: const BoxDecoration(
+              //     borderRadius: BorderRadius.all(Radius.circular(10)),
+              //     color: Colors.black87,
+              //   ),
+              //   child: TextField(
+              //     autofocus: false,
+              //     inputFormatters: [LengthLimitingTextInputFormatter(10)],
+              //     style: GoogleFonts.ubuntu(color: Colors.white),
+              //     keyboardType: TextInputType.number,
+              //     controller: _phoneController,
+              //     decoration: InputDecoration(
+              //       prefixText: '+91 ',
+              //       border: OutlineInputBorder(
+              //         borderRadius: BorderRadius.circular(11),
+              //         borderSide: BorderSide(width: 1,color: Colors.grey.shade200)
+              //       ),
+              //       hintStyle: GoogleFonts.ubuntu(color: Colors.white),
+              //       icon: const Icon(
+              //         Icons.call,
+              //         color: Colors.white,
+              //       ),
+              //       hintText: 'Enter mobile number',
+              //     ),
+              //   ).marginSymmetric(horizontal: 50.w),
+              // ),
               SizedBox(height: 5,),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -598,7 +631,7 @@ class _UserInfoDataState extends State<UserInfoData> {
                     : dropValueCity,
                 'state': dropState,
                 'gender':selectGender.value,
-                'phoneNumber':phoneNumber(),
+                'phoneNumber': widget.isAnonymous?_phoneController.text:phoneNumber(),
                 'dob':selectDOB.value,
                 'uid': uid()
               },

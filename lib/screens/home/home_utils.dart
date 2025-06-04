@@ -15,14 +15,9 @@ import 'package:user/screens/search/seach_club_view.dart';
 import 'package:user/utils/location.dart';
 import 'package:user/utils/utils.dart';
 
-Future<void> getCity(
-    BuildContext context, HomeController homeController) async {
+Future<void> getCity(BuildContext context, HomeController homeController) async {
   await EasyLoading.show();
-  await FirebaseFirestore.instance
-      .collection('User')
-      .doc(uid())
-      .get()
-      .then((DocumentSnapshot<Map<String, dynamic>> value) async {
+  await FirebaseFirestore.instance.collection('User').doc(uid()).get().then((DocumentSnapshot<Map<String, dynamic>> value) async {
     if (value.exists) {
       Box cityBox = await HiveDB.hiveOpenCity();
       String? homeCity = await HiveDB.getKey(cityBox, 'homeCity');
@@ -53,37 +48,31 @@ Future<void> getLocation(BuildContext context) async {
 }
 
 Widget headerOptionAppBar(String title, Function() onTap) => GestureDetector(
-  onTap: () => onTap(),
-  child: Container(
-    height: 75.h,
-    decoration: BoxDecoration(
-      color: Colors.black,
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Center(
-      child: Text(
-        title,
-        style: GoogleFonts.ubuntu(
-          fontSize: 35.sp,
-          color: Colors.white,
+      onTap: () => onTap(),
+      child: Container(
+        height: 75.h,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(10),
         ),
-      ),
-    ).marginOnly(left: 30.w, right: 30.w),
-  ).marginOnly(left: 20.w, right: 20.w, top: 10.h),
-);
+        child: Center(
+          child: Text(
+            title,
+            style: GoogleFonts.ubuntu(
+              fontSize: 35.sp,
+              color: Colors.white,
+            ),
+          ),
+        ).marginOnly(left: 30.w, right: 30.w),
+      ).marginOnly(left: 20.w, right: 20.w, top: 10.h),
+    );
 
-Widget homeAppBar(BuildContext context, GlobalKey<SliderDrawerState> key,
-    HomeController homeController) =>
-    SliderAppBar(
+Widget homeAppBar(BuildContext context, GlobalKey<SliderDrawerState> key, HomeController homeController) => SliderAppBar(
       appBarColor: themeRed(),
-      appBarPadding:
-      EdgeInsets.only(top: MediaQuery.of(context).viewPadding.top),
+      appBarPadding: EdgeInsets.only(top: MediaQuery.of(context).viewPadding.top),
       drawerIconColor: Colors.white,
       drawerIcon: Container(),
-      appBarHeight: MediaQuery.of(context).viewPadding.top +
-          (Provider.of<ShowOptions>(context).showFilter == false
-              ? 200.h
-              : 300.h),
+      appBarHeight: MediaQuery.of(context).viewPadding.top + (Provider.of<ShowOptions>(context).showFilter == false ? 200.h : 300.h),
       trailing: Container(),
       title: Column(
         children: [
@@ -95,29 +84,25 @@ Widget homeAppBar(BuildContext context, GlobalKey<SliderDrawerState> key,
                   Column(
                     children: [
                       Obx(
-                            () => Text(
+                        () => Text(
                           homeController.userName,
                           style: GoogleFonts.montserrat(
                             color: Colors.white,
-                            fontSize: 45.sp,
+                            fontSize: 41.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ).marginOnly(top: 20.h),
-                      SizedBox(
-                        height: 15.h,
-                      ),
                       GestureDetector(
                         onTap: () {
-                          homeController
-                              .updateShowCity(!homeController.showCity);
+                          homeController.updateShowCity(!homeController.showCity);
                         },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             GestureDetector(
                               child: Obx(
-                                    () => Text(
+                                () => Text(
                                   homeController.city,
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.ubuntu(
@@ -139,9 +124,7 @@ Widget homeAppBar(BuildContext context, GlobalKey<SliderDrawerState> key,
                 ],
               ).marginOnly(left: 20.w),
               GestureDetector(
-                onTap: () => key.currentState?.isDrawerOpen == true
-                    ? key.currentState?.animationController.reverse()
-                    : key.currentState?.animationController.forward(),
+                onTap: () => key.currentState?.isDrawerOpen == true ? key.currentState?.animationController.reverse() : key.currentState?.animationController.forward(),
                 child: SizedBox(
                   height: 200.h,
                   width: 300.h,
@@ -169,8 +152,7 @@ Widget homeAppBar(BuildContext context, GlobalKey<SliderDrawerState> key,
                       right: 0,
                       child: IconButton(
                         onPressed: () {
-                          Provider.of<ShowOptions>(context, listen: false)
-                              .changeFilter(
+                          Provider.of<ShowOptions>(context, listen: false).changeFilter(
                             !Provider.of<ShowOptions>(
                               context,
                               listen: false,
@@ -203,8 +185,7 @@ Widget homeAppBar(BuildContext context, GlobalKey<SliderDrawerState> key,
               )
             ],
           ),
-          if (Provider.of<ShowOptions>(context, listen: false).showFilter ==
-              true)
+          if (Provider.of<ShowOptions>(context, listen: false).showFilter == true)
             SizedBox(
               height: 75.h,
               child: ListView(

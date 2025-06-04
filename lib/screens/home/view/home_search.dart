@@ -21,7 +21,8 @@ class HomeSearchCity extends StatefulWidget {
     super.key,
     required this.searchCity,
     required this.clubList,
-    required this.isLoading, this.homeApi,
+    required this.isLoading,
+    this.homeApi,
   });
 
   @override
@@ -38,13 +39,7 @@ class _HomeSearchCityState extends State<HomeSearchCity> {
 
   @override
   Widget build(BuildContext context) {
-    List popularCityList = widget.searchCity.text.isEmpty
-        ? CityList.popularCities
-        : CityList.popularCities
-        .where((element) => element
-        .toLowerCase()
-        .startsWith(widget.searchCity.text.toLowerCase()))
-        .toList();
+    List popularCityList = widget.searchCity.text.isEmpty ? CityList.popularCities : CityList.popularCities.where((element) => element.toLowerCase().startsWith(widget.searchCity.text.toLowerCase())).toList();
     return Container(
       color: matte(),
       child: SingleChildScrollView(
@@ -52,70 +47,74 @@ class _HomeSearchCityState extends State<HomeSearchCity> {
         child: Column(
           children: [
             SizedBox(
-              height: 100.h,
+              height: 180.h,
             ),
-            SizedBox(
-              height: 200.h,
-              width: Get.width - 100.w,
-              child: TextField(
-                controller: widget.searchCity,
-                onChanged: (val) {
-                  setState(() {});
+            Row(children: [
+              SizedBox(
+                height: 180.h,
+                width: Get.width / 1.5,
+                child: TextField(
+                  controller: widget.searchCity,
+                  onChanged: (val) {
+                    setState(() {});
+                  },
+                  style: GoogleFonts.ubuntu(color: Colors.white),
+                  decoration: InputDecoration(
+                    // icon: const Icon(
+                    //   Icons.search,
+                    //   color: Colors.white,
+                    // ),
+                    labelText: 'Enter city name',
+                    labelStyle: GoogleFonts.ubuntu(color: Colors.white),
+                    enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.white70,
+                        width: 1.0,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: Colors.blue,
+                        width: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 42.w),
+              ElevatedButton(
+                onPressed: () async {
+                  if (widget.searchCity.text.isNotEmpty) {
+                    homeController
+                      ..updateCity(
+                        widget.searchCity.text.toLowerCase().capitalizeFirstOfEach,
+                      )
+                      ..updateShowCity(false);
+                    Box cityBox = await HiveDB.hiveOpenCity();
+                    await HiveDB.putKey(cityBox, 'homeCity', widget.searchCity.text);
+                    await getClubList();
+                    widget.homeApi();
+                  } else {
+                    Fluttertoast.showToast(
+                      msg: 'Enter a valid name',
+                    );
+                  }
                 },
-                style: GoogleFonts.ubuntu(color: Colors.white),
-                decoration: InputDecoration(
-                  icon: const Icon(
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.resolveWith(
+                    (Set<MaterialState> states) => Colors.green,
+                  ),
+                ),
+                child: Column(children: [
+                  const Icon(
                     Icons.search,
                     color: Colors.white,
                   ),
-                  labelText: 'Enter city name',
-                  labelStyle: GoogleFonts.ubuntu(color: Colors.white),
-                  enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white70,
-                      width: 1.0,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: Colors.blue,
-                      width: 1.0,
-                    ),
-                  ),
-                ),
+                  Text('Continue')
+                ]).paddingOnly(top: 24.w, bottom: 24.w, left: 12.w, right: 12.w),
               ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (widget.searchCity.text.isNotEmpty) {
-                  homeController
-                    ..updateCity(
-                      widget.searchCity.text
-                          .toLowerCase()
-                          .capitalizeFirstOfEach,
-                    )
-                    ..updateShowCity(false);
-                  Box cityBox = await HiveDB.hiveOpenCity();
-                  await HiveDB.putKey(
-                      cityBox, 'homeCity', widget.searchCity.text);
-                  await getClubList();
-                  widget.homeApi();
-
-
-                } else {
-                  Fluttertoast.showToast(
-                    msg: 'Enter a valid name',
-                  );
-                }
-              },
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.resolveWith(
-                      (Set<MaterialState> states) => Colors.green,
-                ),
-              ),
-              child: const Text('Continue'),
-            ),
+            ]),
             ListView.builder(
               padding: EdgeInsets.symmetric(vertical: 50.h),
               shrinkWrap: true,
@@ -132,8 +131,7 @@ class _HomeSearchCityState extends State<HomeSearchCity> {
                         ..updateCity(popularCityList[index])
                         ..updateShowCity(false);
                       Box cityBox = await HiveDB.hiveOpenCity();
-                      await HiveDB.putKey(
-                          cityBox, 'homeCity', popularCityList[index]);
+                      await HiveDB.putKey(cityBox, 'homeCity', popularCityList[index]);
                       await getClubList();
                       // widget.homeApi();
                     },
@@ -145,9 +143,7 @@ class _HomeSearchCityState extends State<HomeSearchCity> {
                       ),
                       child: Center(
                         child: Text(
-                          widget.searchCity.text.isEmpty
-                              ? CityList.popularCities[index]
-                              : popularCityList[index],
+                          widget.searchCity.text.isEmpty ? CityList.popularCities[index] : popularCityList[index],
                           style: GoogleFonts.ubuntu(
                             color: Colors.white,
                           ),

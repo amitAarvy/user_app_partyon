@@ -1,6 +1,5 @@
 // ignore_for_file: file_names, prefer_const_constructors, prefer_const_literals_to_create_immutables
 
-
 import 'package:flutter/material.dart';
 import 'app-constant.dart';
 
@@ -22,7 +21,7 @@ class HeadingWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 5.0,vertical: 0.0),
+      margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
       child: Padding(
         padding: EdgeInsets.all(2.0),
         child: Row(
@@ -49,7 +48,7 @@ class HeadingWidget extends StatelessWidget {
                 // ),
               ],
             ),
-            if(!hideTrailing)
+            if (!hideTrailing)
               GestureDetector(
                 onTap: onTap,
                 child: Container(
@@ -61,10 +60,7 @@ class HeadingWidget extends StatelessWidget {
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       buttonText,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 14.0,
-                          color: Colors.white),
+                      style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14.0, color: Colors.white),
                     ),
                   ),
                 ),

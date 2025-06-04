@@ -158,15 +158,6 @@
 //   }
 // }
 
-
-
-
-
-
-
-
-
-
 // ignore_for_file: file_names, prefer_const_constructors, avoid_unnecessary_containers, sized_box_for_whitespace, prefer_const_literals_to_create_immutables, unnecessary_string_interpolations
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -235,7 +226,7 @@ class FlashSaleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 200,
+      height: 140,
       child: ListView.builder(
         shrinkWrap: true,
         physics: const BouncingScrollPhysics(),
@@ -246,26 +237,26 @@ class FlashSaleWidget extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => CategoryOnEvent(catName: categoryData[index]['title']),));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CategoryOnEvent(catName: categoryData[index]['title']),
+                    ));
               },
               child: Column(
                 children: [
                   Container(
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.purple),
-                        boxShadow: [
-                          BoxShadow(
-                            offset: Offset(0, 1.h),
-                            spreadRadius: 5.h,
-                            blurRadius: 20.h,
-                            color: Colors.black,
-                          )
-                        ]
-                    ),
+                    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.purple), boxShadow: [
+                      BoxShadow(
+                        offset: Offset(0, 1.h),
+                        spreadRadius: 5.h,
+                        blurRadius: 20.h,
+                        color: Colors.black,
+                      )
+                    ]),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10000),
-                      child: Image.asset(categoryData[index]['icon'], width: 130, height: 130, fit: BoxFit.cover),
+                      child: Image.asset(categoryData[index]['icon'], width: 60, height: 60, fit: BoxFit.cover),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -281,7 +272,8 @@ class FlashSaleWidget extends StatelessWidget {
               ),
             ),
           );
-        },),
+        },
+      ),
     );
     // return FutureBuilder(
     //   future: FirebaseFirestore.instance

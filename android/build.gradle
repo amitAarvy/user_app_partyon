@@ -1,15 +1,9 @@
-buildscript {
-    ext.kotlin_version = '2.1.21'
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.6.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.3.15'
-
+plugins {
+    id "com.google.gms.google-services" version "4.4.1" apply false
+}
+configurations.all {
+    resolutionStrategy {
+        force 'org.bouncycastle:bcprov-jdk18on:1.78.1'
     }
 }
 
@@ -22,6 +16,9 @@ allprojects {
 
 rootProject.buildDir = '../build'
 subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
     afterEvaluate { project ->
         if (project.hasProperty('android')) {
             project.android {
@@ -32,8 +29,16 @@ subprojects {
         }
     }
 }
+
 subprojects {
-    project.buildDir = "${rootProject.buildDir}/${project.name}"
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin("com.android.application") ||
+                project.plugins.hasPlugin("com.android.library")) {
+            project.android {
+                compileSdkVersion 35
+            }
+        }
+    }
 }
 subprojects {
     project.evaluationDependsOn(':app')

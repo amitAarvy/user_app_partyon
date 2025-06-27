@@ -1,5 +1,6 @@
 // ignore_for_file: file_names, prefer_const_constructors, avoid_unnecessary_containers, sized_box_for_whitespace, prefer_const_literals_to_create_immutables, unnecessary_string_interpolations
 
+import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -31,9 +32,9 @@ class NextWeekView extends StatefulWidget {
 }
 
 class _NextWeekViewState extends State<NextWeekView> {
-
   DateTime week = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).add(const Duration(days: 7));
   DateTime weekEnd = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).add(const Duration(days: 14));
+  bool isFolded = false;
 
   // List? nextWeekEventData;
 
@@ -43,8 +44,8 @@ class _NextWeekViewState extends State<NextWeekView> {
     super.initState();
     // fetchNextWeekEventData();
   }
-  final HomeController hc = Get.put(HomeController());
 
+  final HomeController hc = Get.put(HomeController());
 
   // void fetchNextWeekEventData() async{
   //   QuerySnapshot data = await FirebaseFirestore.instance
@@ -89,14 +90,29 @@ class _NextWeekViewState extends State<NextWeekView> {
   // }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Detect fold (hinge) using displayFeatures
+    final displayFeatures = MediaQuery.of(context).displayFeatures;
+
+    // Hinge is considered if there's a display feature of type 'hinge'
+    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
+
+    setState(() {
+      isFolded = isFoldedPhone;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return
-      // nextWeekEventData == null
-      //   ? const Center(child: CircularProgressIndicator(color: Colors.white))
-      //   : nextWeekEventData!.isEmpty
-      //   ? const Center(child: Text("No events found", style: TextStyle(color: Colors.white)))
-      //   :
-      Container(
+        // nextWeekEventData == null
+        //   ? const Center(child: CircularProgressIndicator(color: Colors.white))
+        //   : nextWeekEventData!.isEmpty
+        //   ? const Center(child: Text("No events found", style: TextStyle(color: Colors.white)))
+        //   :
+        Container(
       height: 370.0,
       child: ListView.builder(
         itemCount: widget.nextWeekEventData!.length,
@@ -111,10 +127,7 @@ class _NextWeekViewState extends State<NextWeekView> {
 
           // Check if coverImages exists and is a valid, non-empty list
           List<dynamic> coverImages = [];
-          if (productDataMap.containsKey('coverImages') &&
-              productDataMap['coverImages'] != null &&
-              productDataMap['coverImages'] is List &&
-              productDataMap['coverImages'].isNotEmpty) {
+          if (productDataMap.containsKey('coverImages') && productDataMap['coverImages'] != null && productDataMap['coverImages'] is List && productDataMap['coverImages'].isNotEmpty) {
             coverImages = productDataMap['coverImages'];
           } else {
             coverImages = ['https://via.placeholder.com/200']; // Fallback image if not valid
@@ -125,18 +138,18 @@ class _NextWeekViewState extends State<NextWeekView> {
             categoryId: productDataMap['title'] ?? '',
             productName: productDataMap['title'] ?? '',
             categoryName: productDataMap['venueName'] ?? '',
-            salePrice: productDataMap['startTime'] != null
-                ? productDataMap['startTime'].toDate()
-                : DateTime.now(),
+            salePrice: productDataMap['startTime'] != null ? productDataMap['startTime'].toDate() : DateTime.now(),
             fullPrice: productDataMap['title'] ?? '',
             productImages: coverImages,
           );
 
           return GestureDetector(
             onTap: () async {
-              Get.to(BookEvents(clubUID: productDataMap['clubUID'] ?? '', eventID: productData.id,
-
-              ),
+              Get.to(
+                BookEvents(
+                  clubUID: productDataMap['clubUID'] ?? '',
+                  eventID: productData.id,
+                ),
                 // EventDetails(
                 //   coverImages,
                 //   'tag', // Modify this if needed
@@ -174,7 +187,7 @@ class _NextWeekViewState extends State<NextWeekView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AspectRatio(
-                      aspectRatio: 9/16,
+                      aspectRatio: 9 / (isFolded ? 8 : 16),
                       child: Container(
                         width: Get.width,
                         // height: 180,
@@ -184,20 +197,19 @@ class _NextWeekViewState extends State<NextWeekView> {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(10),
-                          child:
-                          kIsWeb?
-                          netWorkImage(url:coverImages[0] ):
-                          CachedNetworkImage(
-                            fit: BoxFit.fill,
-                            fadeInDuration: const Duration(milliseconds: 100),
-                            fadeOutDuration: const Duration(milliseconds: 100),
-                            useOldImageOnUrlChange: true,
-                            filterQuality: FilterQuality.low,
-                            imageUrl: coverImages[0], // Use the first image in the list
-                            placeholder: (_, __) => const Center(
-                              child: CircularProgressIndicator(color: Colors.orange),
-                            ),
-                          ),
+                          child: kIsWeb
+                              ? netWorkImage(url: coverImages[0])
+                              : CachedNetworkImage(
+                                  fit: BoxFit.fill,
+                                  fadeInDuration: const Duration(milliseconds: 100),
+                                  fadeOutDuration: const Duration(milliseconds: 100),
+                                  useOldImageOnUrlChange: true,
+                                  filterQuality: FilterQuality.low,
+                                  imageUrl: coverImages[0], // Use the first image in the list
+                                  placeholder: (_, __) => const Center(
+                                    child: CircularProgressIndicator(color: Colors.orange),
+                                  ),
+                                ),
                         ),
                       ),
                     ),
@@ -208,7 +220,7 @@ class _NextWeekViewState extends State<NextWeekView> {
                         fontSize: 13.0,
                         color: Colors.white,
                       ),
-                    ).paddingOnly(top: 10.0).marginOnly(left: 10.0, right: 10.0),
+                    ).paddingOnly(top: 4.0).marginOnly(left: 10.0, right: 10.0),
                     Text(
                       productModel.productName,
                       overflow: TextOverflow.ellipsis,
@@ -217,23 +229,18 @@ class _NextWeekViewState extends State<NextWeekView> {
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
                       ),
-                    ).paddingOnly(top: 5.0).marginOnly(left: 10.0, right: 10.0),
-                    const SizedBox(height: 2),
+                    ).paddingOnly(top: 4.0).marginOnly(left: 10.0, right: 10.0),
                     FutureBuilder(
                       future: FirebaseFirestore.instance.collection('Club').doc(productModel.productId).get(),
                       builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-                        if(snapshot.connectionState == ConnectionState.waiting) return Offstage();
-                        if(snapshot.hasError) return Offstage();
-                        if(snapshot.hasData){
+                        if (snapshot.connectionState == ConnectionState.waiting) return Offstage();
+                        if (snapshot.hasError) return Offstage();
+                        if (snapshot.hasData) {
                           return Text(
                             maxLines: 2,
                             "${snapshot.data!.data() == null ? '' : (snapshot.data!.data() as Map<String, dynamic>)['address'] ?? ''}",
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                fontSize: 12.0,
-                                color: Colors.white,
-                                overflow: TextOverflow.ellipsis
-                            ),
+                            style: TextStyle(fontSize: 12.0, color: Colors.white, overflow: TextOverflow.ellipsis),
                           ).marginOnly(left: 10.0, right: 10.0);
                         }
                         return Offstage();

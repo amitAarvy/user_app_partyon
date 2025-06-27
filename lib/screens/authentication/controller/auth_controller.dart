@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+// import 'package:google_sign_in/google_sign_in.dart';
 import 'package:user/screens/authentication/views/user_info.dart';
 import 'package:user/screens/home/view/home_view.dart';
 import 'package:flutter/material.dart';
@@ -104,50 +104,50 @@ class AuthController {
       }
     }
   }
-  static Future<UserCredential?> signInWithGoogle() async {
-    UserCredential? userCred;
-
-    try {
-      await EasyLoading.show();
-      FirebaseAuth auth = FirebaseAuth.instance;
-
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-
-      // Obtain the auth details from the request
-      final GoogleSignInAuthentication? googleAuth =
-      await googleUser?.authentication;
-
-      // Create a new credential
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
-      );
-      UserCredential userCredential =
-      await auth.signInWithCredential(credential);
-      await FirebaseFirestore.instance
-          .collection('User')
-          .doc(userCredential.user?.uid)
-          .get()
-          .then((value) {
-        if (value.exists) {
-          EasyLoading.dismiss();
-          Get.off(() => const HomeView());
-        } else {
-          EasyLoading.dismiss();
-          Get.off(
-            UserInfoData(
-              email: (userCredential.user?.email).toString(),
-            ),
-          );
-        }
-      });
-      // Once signed in, return the UserCredential
-      userCred = await FirebaseAuth.instance.signInWithCredential(credential);
-    } catch (e) {
-      await EasyLoading.dismiss();
-      await Fluttertoast.showToast(msg: 'Something went wrong');
-    }
-
-    return userCred;
-  }
+  // static Future<UserCredential?> signInWithGoogle() async {
+  //   UserCredential? userCred;
+  //
+  //   try {
+  //     await EasyLoading.show();
+  //     FirebaseAuth auth = FirebaseAuth.instance;
+  //
+  //     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+  //
+  //     // Obtain the auth details from the request
+  //     final GoogleSignInAuthentication? googleAuth =
+  //     await googleUser?.authentication;
+  //
+  //     // Create a new credential
+  //     final credential = GoogleAuthProvider.credential(
+  //       accessToken: googleAuth?.accessToken,
+  //       idToken: googleAuth?.idToken,
+  //     );
+  //     UserCredential userCredential =
+  //     await auth.signInWithCredential(credential);
+  //     await FirebaseFirestore.instance
+  //         .collection('User')
+  //         .doc(userCredential.user?.uid)
+  //         .get()
+  //         .then((value) {
+  //       if (value.exists) {
+  //         EasyLoading.dismiss();
+  //         Get.off(() => const HomeView());
+  //       } else {
+  //         EasyLoading.dismiss();
+  //         Get.off(
+  //           UserInfoData(
+  //             email: (userCredential.user?.email).toString(),
+  //           ),
+  //         );
+  //       }
+  //     });
+  //     // Once signed in, return the UserCredential
+  //     userCred = await FirebaseAuth.instance.signInWithCredential(credential);
+  //   } catch (e) {
+  //     await EasyLoading.dismiss();
+  //     await Fluttertoast.showToast(msg: 'Something went wrong');
+  //   }
+  //
+  //   return userCred;
+  // }
 }

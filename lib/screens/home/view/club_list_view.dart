@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -46,6 +47,7 @@ class _ClubListViewState extends State<ClubListView> {
   List<DocumentSnapshot> documentSnapshot = [];
   List paginatedList = [];
   int pageIndex = 1;
+
   int count = 0;
   int itemPerPage = 30;
 
@@ -60,9 +62,7 @@ class _ClubListViewState extends State<ClubListView> {
       }
     });
     widget.homeScrollController.addListener(() {
-      if (widget.homeScrollController.position.pixels >
-          0.75 * widget.homeScrollController.position.maxScrollExtent &&
-          count == 0) {
+      if (widget.homeScrollController.position.pixels > 0.75 * widget.homeScrollController.position.maxScrollExtent && count == 0) {
         pageIndex += 1;
         count += 1;
         initPaginatedList();
@@ -74,8 +74,7 @@ class _ClubListViewState extends State<ClubListView> {
   Future<void> initPaginatedList() async {
     List clubList = [...widget.clubList];
     int totalItems = itemPerPage * pageIndex;
-    paginatedList = clubList.sublist(
-        0, totalItems < clubList.length ? totalItems : clubList.length);
+    paginatedList = clubList.sublist(0, totalItems < clubList.length ? totalItems : clubList.length);
     setState(() {});
     count = 0;
     log("GGG1${widget.clubList.toString()}");
@@ -125,63 +124,60 @@ class _ClubListViewState extends State<ClubListView> {
 
   @override
   Widget build(BuildContext context) => ListView.builder(
-    padding: EdgeInsets.only(top: 50.h),
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    itemCount: paginatedList.length,
-    itemBuilder: (BuildContext context, int index) {
-      String heroTag = randomAlphaNumeric(8);
-      DocumentSnapshot data = paginatedList[index];
-      List categoryList = getKeyValueFirestore(data, 'category') ?? [];
+        padding: EdgeInsets.only(top: 0.h),
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: paginatedList.length,
+        itemBuilder: (BuildContext context, int index) {
+          String heroTag = randomAlphaNumeric(8);
+          DocumentSnapshot data = paginatedList[index];
+          List categoryList = getKeyValueFirestore(data, 'category') ?? [];
 
-      DateTime? date;
-      bool isFav = false;
-      Widget clubCardWidget() => ClubCard(
-        heroTag: heroTag,
-        clubData: data,
-        isFav: isFav,
-        isShowFav: true,
-        clubUID: data.id,
+          DateTime? date;
+          bool isFav = false;
+          Widget clubCardWidget() => ClubCard(
+                heroTag: heroTag,
+                clubData: data,
+                isFav: isFav,
+                isShowFav: true,
+                clubUID: data.id,
+              );
+          return Obx(() {
+            try {
+              if (homeController.isEvents == true) {
+                date = data['eventDate'].toDate();
+              } else {
+                date = DateTime(2099);
+              }
+            } catch (e) {
+              date = DateTime(2100);
+            }
+            try {
+              Map favMap = {'clubID': data.id, 'clubUID': data.id};
+              if (homeController.showFav &&
+                  homeController.filter == 'fav' &&
+                  Provider.of<FavList>(context).favList.isNotEmpty &&
+                  Provider.of<FavList>(context).favList.any((element) {
+                    return mapEquals(element, favMap);
+                  })) {
+                return clubCardWidget();
+              } else if (homeController.filter == 'genre' && homeController.genre == (getKeyValueFirestore(data, 'genre') ?? '')) {
+                return clubCardWidget();
+              } else if (homeController.filter == 'category' && categoryList.contains(homeController.category)) {
+                return clubCardWidget();
+              } else if (homeController.filter.isEmpty) {
+                return clubCardWidget();
+              } else if (widget.isL2HView) {
+                return clubCardWidget();
+              } else {
+                return const SizedBox();
+              }
+            } catch (e) {
+              return Container();
+            }
+          });
+        },
       );
-      return Obx(() {
-        try {
-          if (homeController.isEvents == true) {
-            date = data['eventDate'].toDate();
-          } else {
-            date = DateTime(2099);
-          }
-        } catch (e) {
-          date = DateTime(2100);
-        }
-        try {
-          Map favMap = {'clubID': data.id, 'clubUID': data.id};
-          if (homeController.showFav &&
-              homeController.filter == 'fav' &&
-              Provider.of<FavList>(context).favList.isNotEmpty &&
-              Provider.of<FavList>(context).favList.any((element) {
-                return mapEquals(element, favMap);
-              })) {
-            return clubCardWidget();
-          } else if (homeController.filter == 'genre' &&
-              homeController.genre ==
-                  (getKeyValueFirestore(data, 'genre') ?? '')) {
-            return clubCardWidget();
-          } else if (homeController.filter == 'category' &&
-              categoryList.contains(homeController.category)) {
-            return clubCardWidget();
-          } else if (homeController.filter.isEmpty) {
-            return clubCardWidget();
-          } else if (widget.isL2HView) {
-            return clubCardWidget();
-          } else {
-            return const SizedBox();
-          }
-        } catch (e) {
-          return Container();
-        }
-      });
-    },
-  );
 }
 
 class ClubCard extends StatefulWidget {
@@ -203,6 +199,7 @@ class ClubCard extends StatefulWidget {
 
 class _ClubCardState extends State<ClubCard> {
   bool showEvent = false;
+  bool isFolded = false;
   final HomeController hc = Get.put(HomeController());
   final Cloudflare cloudflare = Cloudflare(
     accountId: cloudFlareAccountID,
@@ -211,37 +208,44 @@ class _ClubCardState extends State<ClubCard> {
   final EventImage eventImg = Get.put(EventImage());
 
   Widget noEventImage() => Container(
-    height: Get.height,
-    width: Get.width,
-    color: Colors.black,
-    child: Center(
-      child: Text(
-        'No Events Today',
-        style: GoogleFonts.ubuntu(
-          fontSize: 60.sp,
-          color: Colors.white,
+        height: Get.height,
+        width: Get.width,
+        color: Colors.black,
+        child: Center(
+          child: Text(
+            'No Events Today',
+            style: GoogleFonts.ubuntu(
+              fontSize: 60.sp,
+              color: Colors.white,
+            ),
+          ),
         ),
-      ),
-    ),
-  );
+      );
 
   @override
-  Widget build(BuildContext context) => Consumer<FavList>(
-      builder: (BuildContext context, FavList favData, Widget? child) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Detect fold (hinge) using displayFeatures
+    final displayFeatures = MediaQuery.of(context).displayFeatures;
+
+    // Hinge is considered if there's a display feature of type 'hinge'
+    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
+
+    setState(() {
+      isFolded = isFoldedPhone;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => Consumer<FavList>(builder: (BuildContext context, FavList favData, Widget? child) {
         bool isFav = false;
         SchedulerBinding.instance.addPostFrameCallback((_) {
-          Provider.of<L2HProvider>(context, listen: false).addToL2H({
-            'data': widget.clubData,
-            'uid': widget.clubUID,
-            'clubID': widget.clubData.id
-          });
+          Provider.of<L2HProvider>(context, listen: false).addToL2H({'data': widget.clubData, 'uid': widget.clubUID, 'clubID': widget.clubData.id});
         });
 
         if (Provider.of<FavList>(context).favList.isNotEmpty) {
-          Map favMap = {
-            'clubID': widget.clubData.id,
-            'clubUID': widget.clubUID
-          };
+          Map favMap = {'clubID': widget.clubData.id, 'clubUID': widget.clubUID};
           if (Provider.of<FavList>(context).favList.any((element) {
             if (mapEquals(element, favMap)) {
               return true;
@@ -255,770 +259,703 @@ class _ClubCardState extends State<ClubCard> {
           isFav = false;
         }
         return Obx(
-              () => (widget.clubData['city'] == hc.city ||
-              widget.clubData['locality'] == hc.city ||
-              hc.showFav == true)
+          () => (widget.clubData['city'] == hc.city || widget.clubData['locality'] == hc.city || hc.showFav == true)
               ? GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ClubDetails(
-                    widget.heroTag,
-                    clubName: widget.clubData['clubName'],
-                    description: widget.clubData['description'],
-                    clubUID: widget.clubUID,
-                  ),
-                ),
-              );
-            },
-            child: Container(
-              height: 800.h,
-              width: Get.width,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    offset: Offset(0, 1.h),
-                    spreadRadius: 5.h,
-                    blurRadius: 20.h,
-                    color: Colors.deepPurple,
-                  )
-                ],
-                color: Colors.white,
-              ),
-              child: Stack(
-                children: [
-                  Column(
-                    children: [
-                      Hero(
-                        tag: widget.heroTag,
-                        child: Container(
-                          height: 700.h,
-                          width: Get.width,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            color: Colors.white,
-                          ),
-                          child: ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(15),
-                                topRight: Radius.circular(15),
-                              ),
-                              child: FutureBuilder<Map<String, dynamic>>(
-                                  future:
-                                  HomeController.getCoverImageDetails(
-                                      widget.clubData),
-                                  builder: (context, snapshot) {
-                                    final data = snapshot.data;
-                                    print('check data image is ${getKeyValueFirestore(
-                                        widget.clubData,
-                                        'coverImage')}');
-                                    return
-                                      kIsWeb?
-                                      netWorkImage(url: showEvent &&
-                                          data != null
-                                          ? data['isValidEventCover']
-                                          ? data['eventCover']
-                                          : ''
-                                          : getKeyValueFirestore(
-                                          widget.clubData,
-                                          'coverImage')):
-
-                                      CachedNetworkImage(
-                                          fit: BoxFit.fill,
-                                          fadeInDuration: const Duration(
-                                              milliseconds: 100),
-                                          fadeOutDuration: const Duration(
-                                              milliseconds: 100),
-                                          useOldImageOnUrlChange: true,
-                                          filterQuality: FilterQuality.low,
-                                          imageUrl: showEvent &&
-                                              data != null
-                                              ? data['isValidEventCover']
-                                              ? data['eventCover']
-                                              : ''
-                                              : getKeyValueFirestore(
-                                              widget.clubData,
-                                              'coverImage'),
-                                          placeholder: (_, __) => const Center(
-                                              child:
-                                              CircularProgressIndicator(
-                                                  color:
-                                                  Colors.orange)),
-                                          errorWidget: (_, __, ___) =>
-                                              noEventImage());
-                                  })),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ClubDetails(
+                          widget.heroTag,
+                          clubName: widget.clubData['clubName'],
+                          description: widget.clubData['description'],
+                          clubUID: widget.clubUID,
                         ),
                       ),
-                      Container(
-                        height: 100.h,
-                        width: Get.width,
-                        decoration: const BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(15),
-                            bottomRight: Radius.circular(15),
-                          ),
-                          color: Colors.black,
-                        ),
-                        child: Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
+                    );
+                  },
+                  child: Container(
+                    height: 800.h,
+                    width: Get.width,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          offset: Offset(0, 1.h),
+                          spreadRadius: 5.h,
+                          blurRadius: 20.h,
+                          color: Colors.deepPurple,
+                        )
+                      ],
+                      color: Colors.white,
+                    ),
+                    child: Stack(
+                      children: [
+                        Column(
                           children: [
-                            SizedBox(
-                              width: Get.width / 2,
-                              child: Text(
-                                "${(getKeyValueFirestore(
-                                  widget.clubData,
-                                  "clubName",
-                                ) ?? "").toString().capitalizeFirst}",
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                            Hero(
+                              tag: widget.heroTag,
+                              child: Container(
+                                height: 700.h,
+                                width: Get.width,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
                                   color: Colors.white,
-                                  fontWeight: FontWeight.bold,
                                 ),
-                              ).paddingOnly(left: 30.w),
-                            ),
-                            Text(
-                              "Open Till  ${getKeyValueFirestore(widget.clubData, "closeTime") ?? 'N/A'}",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 35.sp,
-                                fontWeight: FontWeight.bold,
+                                child: ClipRRect(
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(15),
+                                      topRight: Radius.circular(15),
+                                    ),
+                                    child: FutureBuilder<Map<String, dynamic>>(
+                                        future: HomeController.getCoverImageDetails(widget.clubData),
+                                        builder: (context, snapshot) {
+                                          final data = snapshot.data;
+                                          print('check data image is ${getKeyValueFirestore(widget.clubData, 'coverImage')}');
+                                          return kIsWeb
+                                              ? netWorkImage(
+                                                  url: showEvent && data != null
+                                                      ? data['isValidEventCover']
+                                                          ? data['eventCover']
+                                                          : ''
+                                                      : getKeyValueFirestore(widget.clubData, 'coverImage'))
+                                              : CachedNetworkImage(
+                                                  fit: BoxFit.fill,
+                                                  fadeInDuration: const Duration(milliseconds: 100),
+                                                  fadeOutDuration: const Duration(milliseconds: 100),
+                                                  useOldImageOnUrlChange: true,
+                                                  filterQuality: FilterQuality.low,
+                                                  imageUrl: showEvent && data != null
+                                                      ? data['isValidEventCover']
+                                                          ? data['eventCover']
+                                                          : ''
+                                                      : getKeyValueFirestore(widget.clubData, 'coverImage'),
+                                                  placeholder: (_, __) => const Center(child: CircularProgressIndicator(color: Colors.orange)),
+                                                  errorWidget: (_, __, ___) => noEventImage());
+                                        })),
                               ),
-                            ).paddingOnly(right: 30.w),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        height: Get.height,
-                        width: Get.width / 2,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.black,
-                              Colors.black38,
-                              Colors.black12
-                            ],
-                          ),
-                        ),
-                      ),
-                      Container(
-                        height: Get.height,
-                        width: Get.width / 2 - 20.w,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.black12,
-                              Colors.black38,
-                              Colors.black54,
-                              Colors.black,
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ).marginOnly(bottom: 100.h),
-                  // live now hided in club list
-                  // Align(
-                  //   alignment: Alignment.topRight,
-                  //   child: Container(
-                  //     height: 300.h,
-                  //     width: 200.h,
-                  //     decoration: const BoxDecoration(
-                  //       color: Colors.transparent,
-                  //     ),
-                  //     child: Center(
-                  //       child: Column(
-                  //         children: [
-                  //           IconButton(
-                  //             icon: Icon(
-                  //               Icons.circle,
-                  //               size: 50.h,
-                  //               color: Colors.red,
-                  //             ),
-                  //             onPressed: () async {
-                  //               await EasyLoading.show();
-                  //               await FirebaseFirestore.instance
-                  //                   .collection('Admin')
-                  //                   .doc('Club')
-                  //                   .collection(widget.clubUID)
-                  //                   .doc(widget.clubData.id)
-                  //                   .get()
-                  //                   .then((DocumentSnapshot<
-                  //                           Map<String, dynamic>>
-                  //                       value) async {
-                  //                 try {
-                  //                   if (value.exists) {
-                  //                     await cloudflare.init();
-                  //                     final CloudflareHTTPResponse<
-                  //                             CloudflareLiveInput?>
-                  //                         response = await cloudflare
-                  //                             .liveInputAPI
-                  //                             .get(
-                  //                       id: getKeyValueFirestore(
-                  //                               value, 'videoID') ??
-                  //                           '',
-                  //                     );
-                  //                     CloudflareLiveInput? data =
-                  //                         response.body;
-                  //                     await EasyLoading.dismiss();
-                  //
-                  //                     if (data?.status?.current?.state !=
-                  //                             'disconnected' &&
-                  //                         data != null &&
-                  //                         data.recording.mode !=
-                  //                             LiveInputRecordingMode
-                  //                                 .off) {
-                  //                       final responseList =
-                  //                           await cloudflare.liveInputAPI
-                  //                               .getVideos(
-                  //                         id: value.get('videoID')!,
-                  //                       );
-                  //                       final List<CloudflareStreamVideo>?
-                  //                           videoList = responseList.body;
-                  //                       Get.to(VideoPlayerScreen(
-                  //                           title: Text(
-                  //                             "${(widget.clubData["clubName"]).toString().capitalizeFirst}",
-                  //                             style: const TextStyle(
-                  //                               overflow:
-                  //                                   TextOverflow.ellipsis,
-                  //                               color: Colors.white,
-                  //                               fontWeight:
-                  //                                   FontWeight.bold,
-                  //                             ),
-                  //                           ),
-                  //                           videoURL: (videoList?[0]
-                  //                                   .playback
-                  //                                   ?.dash)
-                  //                               .toString()));
-                  //                     } else {
-                  //                       await EasyLoading.dismiss();
-                  //                       await Fluttertoast.showToast(
-                  //                         msg:
-                  //                             'Live Stream not available',
-                  //                       );
-                  //                     }
-                  //                   }
-                  //                 } catch (e) {
-                  //                   await EasyLoading.dismiss();
-                  //                   await Fluttertoast.showToast(
-                  //                     msg: 'Live Stream not available',
-                  //                   );
-                  //                 }
-                  //               });
-                  //             },
-                  //           ),
-                  //           Text(
-                  //             'Live Now',
-                  //             style: GoogleFonts.ubuntu(
-                  //               color: Colors.white,
-                  //               fontSize: 33.sp,
-                  //             ),
-                  //           )
-                  //         ],
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                  Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Container(
-                      height: 210.h,
-                      width: 150.h,
-                      decoration: const BoxDecoration(
-                        color: Colors.transparent,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              FontAwesomeIcons.music,
-                              size: showEvent == false ? 60.h : 70.h,
-                              color: showEvent == false
-                                  ? Colors.pink
-                                  : Colors.amber,
                             ),
-                            onPressed: () {
-                              setState(() {
-                                showEvent = !showEvent;
-                              });
-                            },
-                          ),
-                          Text(
-                            'Event',
-                            style: GoogleFonts.ubuntu(
-                              color: Colors.white,
-                              fontSize: 35.sp,
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ).marginOnly(bottom: 100.h),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Container(
-                      height: 210.h,
-                      width: 150.h,
-                      decoration: const BoxDecoration(
-                        color: Colors.transparent,
-                      ),
-                      child: Column(
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              isFav == true
-                                  ? FontAwesomeIcons.solidHeart
-                                  : FontAwesomeIcons.heart,
-                              size: 60.h,
-                              color: Colors.pink,
-                            ),
-                            onPressed: () {
-                              List favMap = [
-                                {
-                                  'clubUID': widget.clubUID,
-                                  'clubID': widget.clubData.id
-                                }
-                              ];
-
-                              FirebaseFirestore.instance
-                                  .collection('User')
-                                  .doc(uid())
-                                  .set(
-                                {
-                                  'fav': isFav == false
-                                      ? FieldValue.arrayUnion(
-                                    favMap,
-                                  )
-                                      : FieldValue.arrayRemove(
-                                    favMap,
-                                  )
-                                },
-                                SetOptions(
-                                  merge: true,
-                                ),
-                              ).whenComplete(() {
-                                FirebaseFirestore.instance
-                                    .collection('Favorites')
-                                    .doc(
-                                  widget.clubUID + widget.clubData.id,
-                                )
-                                    .set(
-                                  {
-                                    'favorites': isFav == false
-                                        ? FieldValue.arrayUnion(
-                                      [uid().toString()],
-                                    )
-                                        : FieldValue.arrayRemove(
-                                        [uid().toString()])
-                                  },
-                                  SetOptions(merge: true),
-                                );
-                              });
-                            },
-                          ),
-                          Text(
-                            'Fav',
-                            style: GoogleFonts.ubuntu(
-                              color: Colors.white,
-                              fontSize: 35.sp,
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ).marginOnly(bottom: 100.w),
-                ],
-              ),
-            ).marginOnly(bottom: 40.w, right: 10.w, left: 10.w),
-          ):hc.city =='All City'?
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ClubDetails(
-                        widget.heroTag,
-                        clubName: widget.clubData['clubName'],
-                        description: widget.clubData['description'],
-                        clubUID: widget.clubUID,
-                      ),
-                    ),
-                  );
-                },
-                child: Container(
-                  height: 800.h,
-                  width: Get.width,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        offset: Offset(0, 1.h),
-                        spreadRadius: 5.h,
-                        blurRadius: 20.h,
-                        color: Colors.deepPurple,
-                      )
-                    ],
-                    color: Colors.white,
-                  ),
-                  child: Stack(
-                    children: [
-                      Column(
-                        children: [
-                          Hero(
-                            tag: widget.heroTag,
-                            child: Container(
-                              height: 700.h,
+                            Container(
+                              height: 100.h,
                               width: Get.width,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(15),
-                                color: Colors.white,
+                              decoration: const BoxDecoration(
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(15),
+                                  bottomRight: Radius.circular(15),
+                                ),
+                                color: Colors.black,
                               ),
-                              child: ClipRRect(
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(15),
-                                    topRight: Radius.circular(15),
-                                  ),
-                                  child: FutureBuilder<Map<String, dynamic>>(
-                                      future:
-                                      HomeController.getCoverImageDetails(
-                                          widget.clubData),
-                                      builder: (context, snapshot) {
-                                        final data = snapshot.data;
-                                        print('check data image is ${getKeyValueFirestore(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  SizedBox(
+                                    width: Get.width / 2,
+                                    child: Text(
+                                      "${(getKeyValueFirestore(
                                             widget.clubData,
-                                            'coverImage')}');
-                                        return
-                                          kIsWeb?
-                                          netWorkImage(url: showEvent &&
-                                              data != null
-                                              ? data['isValidEventCover']
-                                              ? data['eventCover']
-                                              : ''
-                                              : getKeyValueFirestore(
-                                              widget.clubData,
-                                              'coverImage')):
-
-                                          CachedNetworkImage(
-                                              fit: BoxFit.fill,
-                                              fadeInDuration: const Duration(
-                                                  milliseconds: 100),
-                                              fadeOutDuration: const Duration(
-                                                  milliseconds: 100),
-                                              useOldImageOnUrlChange: true,
-                                              filterQuality: FilterQuality.low,
-                                              imageUrl: showEvent &&
-                                                  data != null
-                                                  ? data['isValidEventCover']
-                                                  ? data['eventCover']
-                                                  : ''
-                                                  : getKeyValueFirestore(
-                                                  widget.clubData,
-                                                  'coverImage'),
-                                              placeholder: (_, __) => const Center(
-                                                  child:
-                                                  CircularProgressIndicator(
-                                                      color:
-                                                      Colors.orange)),
-                                              errorWidget: (_, __, ___) =>
-                                                  noEventImage());
-                                      })),
-                            ),
-                          ),
-                          Container(
-                            height: 100.h,
-                            width: Get.width,
-                            decoration: const BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(15),
-                                bottomRight: Radius.circular(15),
-                              ),
-                              color: Colors.black,
-                            ),
-                            child: Row(
-                              mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
-                              children: [
-                                SizedBox(
-                                  width: Get.width / 2,
-                                  child: Text(
-                                    "${(getKeyValueFirestore(
-                                      widget.clubData,
-                                      "clubName",
-                                    ) ?? "").toString().capitalizeFirst}",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
+                                            "clubName",
+                                          ) ?? "").toString().capitalizeFirst}",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ).paddingOnly(left: 30.w),
+                                  ),
+                                  Text(
+                                    "Open Till  ${getKeyValueFirestore(widget.clubData, "closeTime") ?? 'N/A'}",
+                                    style: TextStyle(
                                       color: Colors.white,
+                                      fontSize: isFolded ? 18.sp : 35.sp,
                                       fontWeight: FontWeight.bold,
                                     ),
-                                  ).paddingOnly(left: 30.w),
+                                  ).paddingOnly(right: 24.w),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                height: Get.height,
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Colors.black, Colors.black38, Colors.black12],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Container(
+                                height: Get.height,
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.black12,
+                                      Colors.black38,
+                                      Colors.black54,
+                                      Colors.black,
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ).marginOnly(bottom: 100.h),
+                        // live now hided in club list
+                        // Align(
+                        //   alignment: Alignment.topRight,
+                        //   child: Container(
+                        //     height: 300.h,
+                        //     width: 200.h,
+                        //     decoration: const BoxDecoration(
+                        //       color: Colors.transparent,
+                        //     ),
+                        //     child: Center(
+                        //       child: Column(
+                        //         children: [
+                        //           IconButton(
+                        //             icon: Icon(
+                        //               Icons.circle,
+                        //               size: 50.h,
+                        //               color: Colors.red,
+                        //             ),
+                        //             onPressed: () async {
+                        //               await EasyLoading.show();
+                        //               await FirebaseFirestore.instance
+                        //                   .collection('Admin')
+                        //                   .doc('Club')
+                        //                   .collection(widget.clubUID)
+                        //                   .doc(widget.clubData.id)
+                        //                   .get()
+                        //                   .then((DocumentSnapshot<
+                        //                           Map<String, dynamic>>
+                        //                       value) async {
+                        //                 try {
+                        //                   if (value.exists) {
+                        //                     await cloudflare.init();
+                        //                     final CloudflareHTTPResponse<
+                        //                             CloudflareLiveInput?>
+                        //                         response = await cloudflare
+                        //                             .liveInputAPI
+                        //                             .get(
+                        //                       id: getKeyValueFirestore(
+                        //                               value, 'videoID') ??
+                        //                           '',
+                        //                     );
+                        //                     CloudflareLiveInput? data =
+                        //                         response.body;
+                        //                     await EasyLoading.dismiss();
+                        //
+                        //                     if (data?.status?.current?.state !=
+                        //                             'disconnected' &&
+                        //                         data != null &&
+                        //                         data.recording.mode !=
+                        //                             LiveInputRecordingMode
+                        //                                 .off) {
+                        //                       final responseList =
+                        //                           await cloudflare.liveInputAPI
+                        //                               .getVideos(
+                        //                         id: value.get('videoID')!,
+                        //                       );
+                        //                       final List<CloudflareStreamVideo>?
+                        //                           videoList = responseList.body;
+                        //                       Get.to(VideoPlayerScreen(
+                        //                           title: Text(
+                        //                             "${(widget.clubData["clubName"]).toString().capitalizeFirst}",
+                        //                             style: const TextStyle(
+                        //                               overflow:
+                        //                                   TextOverflow.ellipsis,
+                        //                               color: Colors.white,
+                        //                               fontWeight:
+                        //                                   FontWeight.bold,
+                        //                             ),
+                        //                           ),
+                        //                           videoURL: (videoList?[0]
+                        //                                   .playback
+                        //                                   ?.dash)
+                        //                               .toString()));
+                        //                     } else {
+                        //                       await EasyLoading.dismiss();
+                        //                       await Fluttertoast.showToast(
+                        //                         msg:
+                        //                             'Live Stream not available',
+                        //                       );
+                        //                     }
+                        //                   }
+                        //                 } catch (e) {
+                        //                   await EasyLoading.dismiss();
+                        //                   await Fluttertoast.showToast(
+                        //                     msg: 'Live Stream not available',
+                        //                   );
+                        //                 }
+                        //               });
+                        //             },
+                        //           ),
+                        //           Text(
+                        //             'Live Now',
+                        //             style: GoogleFonts.ubuntu(
+                        //               color: Colors.white,
+                        //               fontSize: 33.sp,
+                        //             ),
+                        //           )
+                        //         ],
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
+                        Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Container(
+                            height: 210.h,
+                            width: 150.h,
+                            decoration: const BoxDecoration(
+                              color: Colors.transparent,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    FontAwesomeIcons.music,
+                                    size: showEvent == false ? 60.h : 70.h,
+                                    color: showEvent == false ? Colors.pink : Colors.amber,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      showEvent = !showEvent;
+                                    });
+                                  },
                                 ),
                                 Text(
-                                  "Open Till  ${getKeyValueFirestore(widget.clubData, "closeTime") ?? 'N/A'}",
-                                  style: TextStyle(
+                                  'Event',
+                                  style: GoogleFonts.ubuntu(
                                     color: Colors.white,
-                                    fontSize: 35.sp,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize: isFolded ? 18.sp : 35.sp,
                                   ),
-                                ).paddingOnly(right: 30.w),
+                                )
                               ],
                             ),
-                          )
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Container(
-                            height: Get.height,
-                            width: Get.width / 2,
+                          ),
+                        ).marginOnly(bottom: 100.h),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: Container(
+                            height: 210.h,
+                            width: 150.h,
                             decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.black,
-                                  Colors.black38,
-                                  Colors.black12
-                                ],
-                              ),
+                              color: Colors.transparent,
                             ),
-                          ),
-                          Container(
-                            height: Get.height,
-                            width: Get.width / 2 - 20.w,
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.black12,
-                                  Colors.black38,
-                                  Colors.black54,
-                                  Colors.black,
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ).marginOnly(bottom: 100.h),
-                      // live now hided in club list
-                      // Align(
-                      //   alignment: Alignment.topRight,
-                      //   child: Container(
-                      //     height: 300.h,
-                      //     width: 200.h,
-                      //     decoration: const BoxDecoration(
-                      //       color: Colors.transparent,
-                      //     ),
-                      //     child: Center(
-                      //       child: Column(
-                      //         children: [
-                      //           IconButton(
-                      //             icon: Icon(
-                      //               Icons.circle,
-                      //               size: 50.h,
-                      //               color: Colors.red,
-                      //             ),
-                      //             onPressed: () async {
-                      //               await EasyLoading.show();
-                      //               await FirebaseFirestore.instance
-                      //                   .collection('Admin')
-                      //                   .doc('Club')
-                      //                   .collection(widget.clubUID)
-                      //                   .doc(widget.clubData.id)
-                      //                   .get()
-                      //                   .then((DocumentSnapshot<
-                      //                           Map<String, dynamic>>
-                      //                       value) async {
-                      //                 try {
-                      //                   if (value.exists) {
-                      //                     await cloudflare.init();
-                      //                     final CloudflareHTTPResponse<
-                      //                             CloudflareLiveInput?>
-                      //                         response = await cloudflare
-                      //                             .liveInputAPI
-                      //                             .get(
-                      //                       id: getKeyValueFirestore(
-                      //                               value, 'videoID') ??
-                      //                           '',
-                      //                     );
-                      //                     CloudflareLiveInput? data =
-                      //                         response.body;
-                      //                     await EasyLoading.dismiss();
-                      //
-                      //                     if (data?.status?.current?.state !=
-                      //                             'disconnected' &&
-                      //                         data != null &&
-                      //                         data.recording.mode !=
-                      //                             LiveInputRecordingMode
-                      //                                 .off) {
-                      //                       final responseList =
-                      //                           await cloudflare.liveInputAPI
-                      //                               .getVideos(
-                      //                         id: value.get('videoID')!,
-                      //                       );
-                      //                       final List<CloudflareStreamVideo>?
-                      //                           videoList = responseList.body;
-                      //                       Get.to(VideoPlayerScreen(
-                      //                           title: Text(
-                      //                             "${(widget.clubData["clubName"]).toString().capitalizeFirst}",
-                      //                             style: const TextStyle(
-                      //                               overflow:
-                      //                                   TextOverflow.ellipsis,
-                      //                               color: Colors.white,
-                      //                               fontWeight:
-                      //                                   FontWeight.bold,
-                      //                             ),
-                      //                           ),
-                      //                           videoURL: (videoList?[0]
-                      //                                   .playback
-                      //                                   ?.dash)
-                      //                               .toString()));
-                      //                     } else {
-                      //                       await EasyLoading.dismiss();
-                      //                       await Fluttertoast.showToast(
-                      //                         msg:
-                      //                             'Live Stream not available',
-                      //                       );
-                      //                     }
-                      //                   }
-                      //                 } catch (e) {
-                      //                   await EasyLoading.dismiss();
-                      //                   await Fluttertoast.showToast(
-                      //                     msg: 'Live Stream not available',
-                      //                   );
-                      //                 }
-                      //               });
-                      //             },
-                      //           ),
-                      //           Text(
-                      //             'Live Now',
-                      //             style: GoogleFonts.ubuntu(
-                      //               color: Colors.white,
-                      //               fontSize: 33.sp,
-                      //             ),
-                      //           )
-                      //         ],
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
-                      Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Container(
-                          height: 210.h,
-                          width: 150.h,
-                          decoration: const BoxDecoration(
-                            color: Colors.transparent,
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  FontAwesomeIcons.music,
-                                  size: showEvent == false ? 60.h : 70.h,
-                                  color: showEvent == false
-                                      ? Colors.pink
-                                      : Colors.amber,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    showEvent = !showEvent;
-                                  });
-                                },
-                              ),
-                              Text(
-                                'Event',
-                                style: GoogleFonts.ubuntu(
-                                  color: Colors.white,
-                                  fontSize: 35.sp,
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      ).marginOnly(bottom: 100.h),
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: Container(
-                          height: 210.h,
-                          width: 150.h,
-                          decoration: const BoxDecoration(
-                            color: Colors.transparent,
-                          ),
-                          child: Column(
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  isFav == true
-                                      ? FontAwesomeIcons.solidHeart
-                                      : FontAwesomeIcons.heart,
-                                  size: 60.h,
-                                  color: Colors.pink,
-                                ),
-                                onPressed: () {
-                                  List favMap = [
-                                    {
-                                      'clubUID': widget.clubUID,
-                                      'clubID': widget.clubData.id
-                                    }
-                                  ];
+                            child: Column(
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    isFav == true ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
+                                    size: 60.h,
+                                    color: Colors.pink,
+                                  ),
+                                  onPressed: () {
+                                    List favMap = [
+                                      {'clubUID': widget.clubUID, 'clubID': widget.clubData.id}
+                                    ];
 
-                                  FirebaseFirestore.instance
-                                      .collection('User')
-                                      .doc(uid())
-                                      .set(
-                                    {
-                                      'fav': isFav == false
-                                          ? FieldValue.arrayUnion(
-                                        favMap,
-                                      )
-                                          : FieldValue.arrayRemove(
-                                        favMap,
-                                      )
-                                    },
-                                    SetOptions(
-                                      merge: true,
-                                    ),
-                                  ).whenComplete(() {
-                                    FirebaseFirestore.instance
-                                        .collection('Favorites')
-                                        .doc(
-                                      widget.clubUID + widget.clubData.id,
-                                    )
-                                        .set(
+                                    FirebaseFirestore.instance.collection('User').doc(uid()).set(
                                       {
-                                        'favorites': isFav == false
+                                        'fav': isFav == false
                                             ? FieldValue.arrayUnion(
-                                          [uid().toString()],
-                                        )
+                                                favMap,
+                                              )
                                             : FieldValue.arrayRemove(
-                                            [uid().toString()])
+                                                favMap,
+                                              )
                                       },
-                                      SetOptions(merge: true),
-                                    );
-                                  });
-                                },
-                              ),
-                              Text(
-                                'Fav',
-                                style: GoogleFonts.ubuntu(
-                                  color: Colors.white,
-                                  fontSize: 35.sp,
+                                      SetOptions(
+                                        merge: true,
+                                      ),
+                                    ).whenComplete(() {
+                                      FirebaseFirestore.instance
+                                          .collection('Favorites')
+                                          .doc(
+                                            widget.clubUID + widget.clubData.id,
+                                          )
+                                          .set(
+                                        {
+                                          'favorites': isFav == false
+                                              ? FieldValue.arrayUnion(
+                                                  [uid().toString()],
+                                                )
+                                              : FieldValue.arrayRemove([uid().toString()])
+                                        },
+                                        SetOptions(merge: true),
+                                      );
+                                    });
+                                  },
                                 ),
-                              )
-                            ],
+                                Text(
+                                  'Fav',
+                                  style: GoogleFonts.ubuntu(
+                                    color: Colors.white,
+                                    fontSize: isFolded ? 18.sp : 35.sp,
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
+                        ).marginOnly(bottom: 100.h),
+                      ],
+                    ),
+                  ).marginOnly(bottom: 40.w, right: 10.w, left: 10.w),
+                )
+              : hc.city == 'All City'
+                  ? GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ClubDetails(
+                              widget.heroTag,
+                              clubName: widget.clubData['clubName'],
+                              description: widget.clubData['description'],
+                              clubUID: widget.clubUID,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        height: 800.h,
+                        width: Get.width,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          boxShadow: [
+                            BoxShadow(
+                              offset: Offset(0, 1.h),
+                              spreadRadius: 5.h,
+                              blurRadius: 20.h,
+                              color: Colors.deepPurple,
+                            )
+                          ],
+                          color: Colors.white,
                         ),
-                      ).marginOnly(bottom: 100.w),
-                    ],
-                  ),
-                ).marginOnly(bottom: 40.w, right: 10.w, left: 10.w),
-              )
-              : Container(),
+                        child: Stack(
+                          children: [
+                            Column(
+                              children: [
+                                Hero(
+                                  tag: widget.heroTag,
+                                  child: Container(
+                                    height: 700.h,
+                                    width: Get.width,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(15),
+                                      color: Colors.white,
+                                    ),
+                                    child: ClipRRect(
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(15),
+                                          topRight: Radius.circular(15),
+                                        ),
+                                        child: FutureBuilder<Map<String, dynamic>>(
+                                            future: HomeController.getCoverImageDetails(widget.clubData),
+                                            builder: (context, snapshot) {
+                                              final data = snapshot.data;
+                                              print('check data image is ${getKeyValueFirestore(widget.clubData, 'coverImage')}');
+                                              return kIsWeb
+                                                  ? netWorkImage(
+                                                      url: showEvent && data != null
+                                                          ? data['isValidEventCover']
+                                                              ? data['eventCover']
+                                                              : ''
+                                                          : getKeyValueFirestore(widget.clubData, 'coverImage'))
+                                                  : CachedNetworkImage(
+                                                      fit: BoxFit.fill,
+                                                      fadeInDuration: const Duration(milliseconds: 100),
+                                                      fadeOutDuration: const Duration(milliseconds: 100),
+                                                      useOldImageOnUrlChange: true,
+                                                      filterQuality: FilterQuality.low,
+                                                      imageUrl: showEvent && data != null
+                                                          ? data['isValidEventCover']
+                                                              ? data['eventCover']
+                                                              : ''
+                                                          : getKeyValueFirestore(widget.clubData, 'coverImage'),
+                                                      placeholder: (_, __) => const Center(child: CircularProgressIndicator(color: Colors.orange)),
+                                                      errorWidget: (_, __, ___) => noEventImage());
+                                            })),
+                                  ),
+                                ),
+                                Container(
+                                  height: 100.h,
+                                  width: Get.width,
+                                  decoration: const BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(15),
+                                      bottomRight: Radius.circular(15),
+                                    ),
+                                    color: Colors.black,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      SizedBox(
+                                        width: Get.width / 2,
+                                        child: Text(
+                                          "${(getKeyValueFirestore(
+                                                widget.clubData,
+                                                "clubName",
+                                              ) ?? "").toString().capitalizeFirst}",
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ).paddingOnly(left: 30.w),
+                                      ),
+                                      Text(
+                                        "Open Till  ${getKeyValueFirestore(widget.clubData, "closeTime") ?? 'N/A'}",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: isFolded ? 18.sp : 35.sp,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ).paddingOnly(right: 30.w),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Container(
+                                  height: Get.height,
+                                  width: Get.width / 2,
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [Colors.black, Colors.black38, Colors.black12],
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  height: Get.height,
+                                  width: Get.width / 2 - 28.w,
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.black12,
+                                        Colors.black38,
+                                        Colors.black54,
+                                        Colors.black,
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ).marginOnly(bottom: 100.h),
+                            // live now hided in club list
+                            // Align(
+                            //   alignment: Alignment.topRight,
+                            //   child: Container(
+                            //     height: 300.h,
+                            //     width: 200.h,
+                            //     decoration: const BoxDecoration(
+                            //       color: Colors.transparent,
+                            //     ),
+                            //     child: Center(
+                            //       child: Column(
+                            //         children: [
+                            //           IconButton(
+                            //             icon: Icon(
+                            //               Icons.circle,
+                            //               size: 50.h,
+                            //               color: Colors.red,
+                            //             ),
+                            //             onPressed: () async {
+                            //               await EasyLoading.show();
+                            //               await FirebaseFirestore.instance
+                            //                   .collection('Admin')
+                            //                   .doc('Club')
+                            //                   .collection(widget.clubUID)
+                            //                   .doc(widget.clubData.id)
+                            //                   .get()
+                            //                   .then((DocumentSnapshot<
+                            //                           Map<String, dynamic>>
+                            //                       value) async {
+                            //                 try {
+                            //                   if (value.exists) {
+                            //                     await cloudflare.init();
+                            //                     final CloudflareHTTPResponse<
+                            //                             CloudflareLiveInput?>
+                            //                         response = await cloudflare
+                            //                             .liveInputAPI
+                            //                             .get(
+                            //                       id: getKeyValueFirestore(
+                            //                               value, 'videoID') ??
+                            //                           '',
+                            //                     );
+                            //                     CloudflareLiveInput? data =
+                            //                         response.body;
+                            //                     await EasyLoading.dismiss();
+                            //
+                            //                     if (data?.status?.current?.state !=
+                            //                             'disconnected' &&
+                            //                         data != null &&
+                            //                         data.recording.mode !=
+                            //                             LiveInputRecordingMode
+                            //                                 .off) {
+                            //                       final responseList =
+                            //                           await cloudflare.liveInputAPI
+                            //                               .getVideos(
+                            //                         id: value.get('videoID')!,
+                            //                       );
+                            //                       final List<CloudflareStreamVideo>?
+                            //                           videoList = responseList.body;
+                            //                       Get.to(VideoPlayerScreen(
+                            //                           title: Text(
+                            //                             "${(widget.clubData["clubName"]).toString().capitalizeFirst}",
+                            //                             style: const TextStyle(
+                            //                               overflow:
+                            //                                   TextOverflow.ellipsis,
+                            //                               color: Colors.white,
+                            //                               fontWeight:
+                            //                                   FontWeight.bold,
+                            //                             ),
+                            //                           ),
+                            //                           videoURL: (videoList?[0]
+                            //                                   .playback
+                            //                                   ?.dash)
+                            //                               .toString()));
+                            //                     } else {
+                            //                       await EasyLoading.dismiss();
+                            //                       await Fluttertoast.showToast(
+                            //                         msg:
+                            //                             'Live Stream not available',
+                            //                       );
+                            //                     }
+                            //                   }
+                            //                 } catch (e) {
+                            //                   await EasyLoading.dismiss();
+                            //                   await Fluttertoast.showToast(
+                            //                     msg: 'Live Stream not available',
+                            //                   );
+                            //                 }
+                            //               });
+                            //             },
+                            //           ),
+                            //           Text(
+                            //             'Live Now',
+                            //             style: GoogleFonts.ubuntu(
+                            //               color: Colors.white,
+                            //               fontSize: 33.sp,
+                            //             ),
+                            //           )
+                            //         ],
+                            //       ),
+                            //     ),
+                            //   ),
+                            // ),
+                            Align(
+                              alignment: Alignment.bottomLeft,
+                              child: Container(
+                                height: 210.h,
+                                width: 150.h,
+                                decoration: const BoxDecoration(
+                                  color: Colors.transparent,
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(
+                                        FontAwesomeIcons.music,
+                                        size: showEvent == false ? 60.h : 70.h,
+                                        color: showEvent == false ? Colors.pink : Colors.amber,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          showEvent = !showEvent;
+                                        });
+                                      },
+                                    ),
+                                    Text(
+                                      'Event',
+                                      style: GoogleFonts.ubuntu(
+                                        color: Colors.white,
+                                        fontSize: isFolded ? 18.sp : 35.sp,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ).marginOnly(bottom: 100.h),
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: Container(
+                                height: 210.h,
+                                width: 150.h,
+                                decoration: const BoxDecoration(
+                                  color: Colors.transparent,
+                                ),
+                                child: Column(
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(
+                                        isFav == true ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
+                                        size: 60.h,
+                                        color: Colors.pink,
+                                      ),
+                                      onPressed: () {
+                                        List favMap = [
+                                          {'clubUID': widget.clubUID, 'clubID': widget.clubData.id}
+                                        ];
+
+                                        FirebaseFirestore.instance.collection('User').doc(uid()).set(
+                                          {
+                                            'fav': isFav == false
+                                                ? FieldValue.arrayUnion(
+                                                    favMap,
+                                                  )
+                                                : FieldValue.arrayRemove(
+                                                    favMap,
+                                                  )
+                                          },
+                                          SetOptions(
+                                            merge: true,
+                                          ),
+                                        ).whenComplete(() {
+                                          FirebaseFirestore.instance
+                                              .collection('Favorites')
+                                              .doc(
+                                                widget.clubUID + widget.clubData.id,
+                                              )
+                                              .set(
+                                            {
+                                              'favorites': isFav == false
+                                                  ? FieldValue.arrayUnion(
+                                                      [uid().toString()],
+                                                    )
+                                                  : FieldValue.arrayRemove([uid().toString()])
+                                            },
+                                            SetOptions(merge: true),
+                                          );
+                                        });
+                                      },
+                                    ),
+                                    Text(
+                                      'Fav',
+                                      style: GoogleFonts.ubuntu(
+                                        color: Colors.white,
+                                        fontSize: isFolded ? 18.sp : 35.sp,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ).marginOnly(bottom: 100.h),
+                          ],
+                        ),
+                      ).marginOnly(bottom: 40.w),
+                    )
+                  : Container(),
         );
       });
 }

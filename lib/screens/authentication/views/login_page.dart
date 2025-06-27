@@ -314,13 +314,13 @@ class _LoginPageState extends State<LoginPage> {
                         SizedBox(
                           width: 20.w,
                         ),
-                        const IconButton(
-                          onPressed: AuthController.signInWithGoogle,
-                          icon: Icon(
-                            FontAwesomeIcons.google,
-                            color: Colors.redAccent,
-                          ),
-                        ),
+                        // const IconButton(
+                        //   onPressed: AuthController.signInWithGoogle,
+                        //   icon: Icon(
+                        //     FontAwesomeIcons.google,
+                        //     color: Colors.redAccent,
+                        //   ),
+                        // ),
                       ],
                     )
                   ],

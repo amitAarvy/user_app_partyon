@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -46,6 +47,7 @@ class _ClubListViewState extends State<ClubListView> {
   List<DocumentSnapshot> documentSnapshot = [];
   List paginatedList = [];
   int pageIndex = 1;
+
   int count = 0;
   int itemPerPage = 30;
 
@@ -197,6 +199,7 @@ class ClubCard extends StatefulWidget {
 
 class _ClubCardState extends State<ClubCard> {
   bool showEvent = false;
+  bool isFolded = false;
   final HomeController hc = Get.put(HomeController());
   final Cloudflare cloudflare = Cloudflare(
     accountId: cloudFlareAccountID,
@@ -218,6 +221,21 @@ class _ClubCardState extends State<ClubCard> {
           ),
         ),
       );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Detect fold (hinge) using displayFeatures
+    final displayFeatures = MediaQuery.of(context).displayFeatures;
+
+    // Hinge is considered if there's a display feature of type 'hinge'
+    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
+
+    setState(() {
+      isFolded = isFoldedPhone;
+    });
+  }
 
   @override
   Widget build(BuildContext context) => Consumer<FavList>(builder: (BuildContext context, FavList favData, Widget? child) {
@@ -348,7 +366,7 @@ class _ClubCardState extends State<ClubCard> {
                                     "Open Till  ${getKeyValueFirestore(widget.clubData, "closeTime") ?? 'N/A'}",
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 35.sp,
+                                      fontSize: isFolded ? 18.sp : 35.sp,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ).paddingOnly(right: 24.w),
@@ -359,26 +377,28 @@ class _ClubCardState extends State<ClubCard> {
                         ),
                         Row(
                           children: [
-                            Container(
-                              height: Get.height,
-                              width: Get.width / 2,
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [Colors.black, Colors.black38, Colors.black12],
+                            Expanded(
+                              child: Container(
+                                height: Get.height,
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Colors.black, Colors.black38, Colors.black12],
+                                  ),
                                 ),
                               ),
                             ),
-                            Container(
-                              height: Get.height,
-                              width: Get.width / 2 - 20.w,
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.black12,
-                                    Colors.black38,
-                                    Colors.black54,
-                                    Colors.black,
-                                  ],
+                            Expanded(
+                              child: Container(
+                                height: Get.height,
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.black12,
+                                      Colors.black38,
+                                      Colors.black54,
+                                      Colors.black,
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -513,7 +533,7 @@ class _ClubCardState extends State<ClubCard> {
                                   'Event',
                                   style: GoogleFonts.ubuntu(
                                     color: Colors.white,
-                                    fontSize: 35.sp,
+                                    fontSize: isFolded ? 18.sp : 35.sp,
                                   ),
                                 )
                               ],
@@ -577,13 +597,13 @@ class _ClubCardState extends State<ClubCard> {
                                   'Fav',
                                   style: GoogleFonts.ubuntu(
                                     color: Colors.white,
-                                    fontSize: 35.sp,
+                                    fontSize: isFolded ? 18.sp : 35.sp,
                                   ),
                                 )
                               ],
                             ),
                           ),
-                        ).marginOnly(bottom: 100.w),
+                        ).marginOnly(bottom: 100.h),
                       ],
                     ),
                   ).marginOnly(bottom: 40.w, right: 10.w, left: 10.w),
@@ -695,7 +715,7 @@ class _ClubCardState extends State<ClubCard> {
                                         "Open Till  ${getKeyValueFirestore(widget.clubData, "closeTime") ?? 'N/A'}",
                                         style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 35.sp,
+                                          fontSize: isFolded ? 18.sp : 35.sp,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ).paddingOnly(right: 30.w),
@@ -717,7 +737,7 @@ class _ClubCardState extends State<ClubCard> {
                                 ),
                                 Container(
                                   height: Get.height,
-                                  width: Get.width / 2 - 20.w,
+                                  width: Get.width / 2 - 28.w,
                                   decoration: const BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
@@ -860,7 +880,7 @@ class _ClubCardState extends State<ClubCard> {
                                       'Event',
                                       style: GoogleFonts.ubuntu(
                                         color: Colors.white,
-                                        fontSize: 35.sp,
+                                        fontSize: isFolded ? 18.sp : 35.sp,
                                       ),
                                     )
                                   ],
@@ -924,16 +944,16 @@ class _ClubCardState extends State<ClubCard> {
                                       'Fav',
                                       style: GoogleFonts.ubuntu(
                                         color: Colors.white,
-                                        fontSize: 35.sp,
+                                        fontSize: isFolded ? 18.sp : 35.sp,
                                       ),
                                     )
                                   ],
                                 ),
                               ),
-                            ).marginOnly(bottom: 100.w),
+                            ).marginOnly(bottom: 100.h),
                           ],
                         ),
-                      ).marginOnly(bottom: 40.w, right: 10.w, left: 10.w),
+                      ).marginOnly(bottom: 40.w),
                     )
                   : Container(),
         );

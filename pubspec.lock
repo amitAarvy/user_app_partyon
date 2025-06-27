@@ -952,6 +952,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  msg91:
+    dependency: "direct main"
+    description:
+      name: msg91
+      sha256: "1c6df72236dba98b6d69e83a1a00424715d8d5e3b0e91358696e26bcf1604d4f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.5"
   music_visualizer:
     dependency: "direct main"
     description:
@@ -1232,6 +1240,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  sendotp_flutter_sdk:
+    dependency: "direct main"
+    description:
+      name: sendotp_flutter_sdk
+      sha256: "34287490e44f6a0c9e3f2598fc236618b0dc37f782cbf9efde729a33aa8b4664"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.1"
   share_plus:
     dependency: "direct main"
     description:

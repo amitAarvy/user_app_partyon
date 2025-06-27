@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
@@ -30,6 +32,8 @@ class BookingInfo extends StatefulWidget {
 }
 
 class _BookingInfoState extends State<BookingInfo> {
+  bool isFolded = false;
+
   TableRow tableRow({
     required String first,
     required String second,
@@ -87,18 +91,32 @@ class _BookingInfoState extends State<BookingInfo> {
             title,
             style: GoogleFonts.ubuntu(
               color: Colors.orange,
-              fontSize: 45.sp,
+              fontSize: isFolded ? 24.sp : 45.sp,
             ),
           ).paddingAll(40.w),
           Text(
             value,
             style: GoogleFonts.ubuntu(
               color: Colors.white,
-              fontSize: 45.sp,
+              fontSize: isFolded ? 24.sp : 45.sp,
             ),
           ).paddingAll(40.w),
         ],
       );
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Detect fold (hinge) using displayFeatures
+    final displayFeatures = MediaQuery.of(context).displayFeatures;
+
+    // Hinge is considered if there's a display feature of type 'hinge'
+    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
+
+    setState(() {
+      isFolded = isFoldedPhone;
+    });
+  }
 
   @override
   void initState() {
@@ -131,7 +149,7 @@ class _BookingInfoState extends State<BookingInfo> {
                 'Booking ID- ${widget.bookingID}',
                 style: GoogleFonts.ubuntu(
                   color: Colors.white,
-                  fontSize: 50.sp,
+                  fontSize: isFolded ? 24.sp : 50.sp,
                 ),
               ),
             ],
@@ -168,7 +186,7 @@ class _BookingInfoState extends State<BookingInfo> {
                             'No Data Found',
                             style: GoogleFonts.ubuntu(
                               color: Colors.white,
-                              fontSize: 45.sp,
+                              fontSize: isFolded ? 24.sp : 45.sp,
                             ),
                           ),
                         ),
@@ -179,7 +197,7 @@ class _BookingInfoState extends State<BookingInfo> {
                           'Booking Details',
                           style: GoogleFonts.ubuntu(
                             color: Colors.amber,
-                            fontSize: 60.sp,
+                            fontSize: isFolded ? 24.sp : 60.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ).paddingAll(40.sp),
@@ -211,7 +229,7 @@ class _BookingInfoState extends State<BookingInfo> {
                                       'No Data Found',
                                       style: GoogleFonts.ubuntu(
                                         color: Colors.white,
-                                        fontSize: 45.sp,
+                                        fontSize: isFolded ? 24.sp : 45.sp,
                                       ),
                                     ),
                                   ),

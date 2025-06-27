@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -30,6 +31,7 @@ class VenueView extends StatefulWidget {
 
 class _VenueViewState extends State<VenueView> {
   int currentPageIndex = 0;
+  bool isFolded = false;
   String? selectedCity;
   TextEditingController searchCity = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -46,6 +48,21 @@ class _VenueViewState extends State<VenueView> {
   void initState() {
     initHome();
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Detect fold (hinge) using displayFeatures
+    final displayFeatures = MediaQuery.of(context).displayFeatures;
+
+    // Hinge is considered if there's a display feature of type 'hinge'
+    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
+
+    setState(() {
+      isFolded = isFoldedPhone;
+    });
   }
 
   void initHome() async {
@@ -101,7 +118,7 @@ class _VenueViewState extends State<VenueView> {
                                 width: Get.width,
                                 color: Colors.black,
                                 child: Padding(
-                                  padding: EdgeInsets.only(top: 80.w),
+                                  padding: EdgeInsets.only(top: isFolded ? 20.w : 80.w),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
@@ -110,11 +127,12 @@ class _VenueViewState extends State<VenueView> {
                                           Column(
                                             children: [
                                               Obx(() => Padding(
-                                                  padding: EdgeInsets.only(top: 0.h, left: 0.w),
+                                                  padding: EdgeInsets.only(top: isFolded ? 60.h : 0.h, left: 0.w),
                                                   child: Text(
                                                     homeController.userName.capitalizeFirstOfEach,
                                                     style: GoogleFonts.montserrat(
                                                       color: Colors.white,
+                                                      // fontSize: isFolded ? 24.sp : 42.sp,
                                                       fontSize: 42.sp,
                                                       fontWeight: FontWeight.bold,
                                                     ),
@@ -136,6 +154,7 @@ class _VenueViewState extends State<VenueView> {
                                                           homeController.city,
                                                           textAlign: TextAlign.center,
                                                           style: GoogleFonts.ubuntu(
+                                                            // fontSize: isFolded ? 21.sp : 38.sp,
                                                             fontSize: 38.sp,
                                                             color: Colors.white,
                                                           ),
@@ -157,11 +176,12 @@ class _VenueViewState extends State<VenueView> {
                                         onTap: () => key.currentState?.isDrawerOpen == true ? key.currentState?.animationController.reverse() : key.currentState?.animationController.forward(),
                                         child: SizedBox(
                                           height: 200.h,
-                                          width: 300.h,
+                                          width: isFolded ? 380.h : 300.h,
                                           child: Center(
                                             child: Text(
                                               'PartyOn',
                                               style: GoogleFonts.dancingScript(
+                                                // fontSize: isFolded ? 44.sp : 80.sp,
                                                 fontSize: 80.sp,
                                                 color: Colors.white,
                                               ),

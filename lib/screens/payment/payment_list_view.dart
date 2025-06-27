@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,6 +15,23 @@ class PaymentListView extends StatefulWidget {
 }
 
 class _PaymentListViewState extends State<PaymentListView> {
+  bool isFolded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Detect fold (hinge) using displayFeatures
+    final displayFeatures = MediaQuery.of(context).displayFeatures;
+
+    // Hinge is considered if there's a display feature of type 'hinge'
+    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
+
+    setState(() {
+      isFolded = isFoldedPhone;
+    });
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: matte(),
@@ -32,7 +51,7 @@ class _PaymentListViewState extends State<PaymentListView> {
                 'Payments',
                 style: GoogleFonts.ubuntu(
                   color: Colors.white,
-                  fontSize: 60.sp,
+                  fontSize: isFolded ? 24.sp : 60.sp,
                 ),
               ),
             ],
@@ -50,7 +69,7 @@ class _PaymentListViewState extends State<PaymentListView> {
               SizedBox(
                 width: Get.width,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Expanded(
                       child: SizedBox(
@@ -59,7 +78,7 @@ class _PaymentListViewState extends State<PaymentListView> {
                             'Date',
                             style: GoogleFonts.ubuntu(
                               color: Colors.orange,
-                              fontSize: 50.sp,
+                              fontSize: isFolded ? 24.sp : 50.sp,
                             ),
                           ),
                         ),
@@ -72,7 +91,7 @@ class _PaymentListViewState extends State<PaymentListView> {
                             'Amount',
                             style: GoogleFonts.ubuntu(
                               color: Colors.orange,
-                              fontSize: 50.sp,
+                              fontSize: isFolded ? 24.sp : 50.sp,
                             ),
                           ),
                         ),
@@ -85,7 +104,7 @@ class _PaymentListViewState extends State<PaymentListView> {
                             'PaymentID',
                             style: GoogleFonts.ubuntu(
                               color: Colors.orange,
-                              fontSize: 50.sp,
+                              fontSize: isFolded ? 24.sp : 50.sp,
                             ),
                           ),
                         ),
@@ -98,7 +117,7 @@ class _PaymentListViewState extends State<PaymentListView> {
                             'Status',
                             style: GoogleFonts.ubuntu(
                               color: Colors.orange,
-                              fontSize: 50.sp,
+                              fontSize: isFolded ? 24.sp : 50.sp,
                             ),
                           ),
                         ),
@@ -125,7 +144,7 @@ class _PaymentListViewState extends State<PaymentListView> {
                           'No Payments found',
                           style: GoogleFonts.ubuntu(
                             color: Colors.white,
-                            fontSize: 60.sp,
+                            fontSize: isFolded ? 24.sp : 60.sp,
                           ),
                         ),
                       ),

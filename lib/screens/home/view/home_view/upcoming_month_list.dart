@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -23,6 +25,7 @@ class UpcomingMonthList extends StatefulWidget {
 }
 
 class _UpcomingMonthListState extends State<UpcomingMonthList> {
+  bool isFolded = false;
   DateTime month = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).add(const Duration(days: 30));
   DateTime today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
 
@@ -54,6 +57,21 @@ class _UpcomingMonthListState extends State<UpcomingMonthList> {
     upcomingMonthData = upcomingMonthData!.where((element) => element['date'].toDate().isAfter(today)).toList();
     upcomingMonthData!.sort((a, b) => a['date'].toDate().compareTo(b['date'].toDate()));
     setState(() {});
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Detect fold (hinge) using displayFeatures
+    final displayFeatures = MediaQuery.of(context).displayFeatures;
+
+    // Hinge is considered if there's a display feature of type 'hinge'
+    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
+
+    setState(() {
+      isFolded = isFoldedPhone;
+    });
   }
 
   @override
@@ -143,7 +161,7 @@ class _UpcomingMonthListState extends State<UpcomingMonthList> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 AspectRatio(
-                                  aspectRatio: 9 / 16,
+                                  aspectRatio: 9 / (isFolded ? 8 : 16),
                                   child: Container(
                                     // width: Get.width,
                                     // height: 180,

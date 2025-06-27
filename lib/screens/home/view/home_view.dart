@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -31,6 +32,7 @@ import '../../this_week_view.dart';
 import '../../upcoming_month_view.dart';
 import '../../popular_bollywood_view.dart';
 import 'home_view/this_week.dart';
+import 'package:flutter/widgets.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -41,6 +43,7 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   int currentPageIndex = 0;
+  bool isFolded = false;
   String? selectedCity;
   TextEditingController searchCity = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -63,6 +66,21 @@ class _HomeViewState extends State<HomeView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initHome();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Detect fold (hinge) using displayFeatures
+    final displayFeatures = MediaQuery.of(context).displayFeatures;
+
+    // Hinge is considered if there's a display feature of type 'hinge'
+    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
+
+    setState(() {
+      isFolded = isFoldedPhone;
     });
   }
 
@@ -315,7 +333,7 @@ class _HomeViewState extends State<HomeView> {
           backgroundColor: Colors.black,
           key: _scaffoldKey,
           resizeToAvoidBottomInset: false,
-          drawer: drawer(),
+          drawer: drawer(isFolded: isFolded),
           body: Obx(
             () => homeController.showCity == true
                 ? HomeSearchCity(homeApi: initHome, searchCity: searchCity, clubList: homeController.clubList, isLoading: homeController.isLoading)
@@ -340,7 +358,7 @@ class _HomeViewState extends State<HomeView> {
                             ),
                             child: Padding(
                               padding: EdgeInsets.only(
-                                top: 80.w,
+                                top: isFolded ? 40.w : 80.w,
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -354,11 +372,12 @@ class _HomeViewState extends State<HomeView> {
                                             () => GestureDetector(
                                               onTap: () => _scaffoldKey.currentState?.openDrawer(),
                                               child: Padding(
-                                                  padding: EdgeInsets.only(top: 40.h, left: 0.w),
+                                                  padding: EdgeInsets.only(top: isFolded ? 60.h : 40.h, left: 0.w),
                                                   child: Text(
                                                     homeController.userName.capitalizeFirstOfEach,
                                                     style: GoogleFonts.montserrat(
                                                       color: Colors.white,
+                                                      // fontSize: isFolded ? 32.sp : 42.sp,
                                                       fontSize: 42.sp,
                                                       fontWeight: FontWeight.bold,
                                                     ),
@@ -382,6 +401,7 @@ class _HomeViewState extends State<HomeView> {
                                                       homeController.city,
                                                       textAlign: TextAlign.center,
                                                       style: GoogleFonts.ubuntu(
+                                                        // fontSize: isFolded ? 28.sp : 38.sp,
                                                         fontSize: 38.sp,
                                                         color: Colors.white,
                                                       ),
@@ -410,11 +430,12 @@ class _HomeViewState extends State<HomeView> {
                                     //     .forward(),
                                     child: SizedBox(
                                       height: 200.h,
-                                      width: 280.h,
+                                      width: isFolded ? 380.h : 280.h,
                                       child: Center(
                                         child: Text(
                                           'PartyOn',
                                           style: GoogleFonts.dancingScript(
+                                            // fontSize: isFolded ? 44.sp : 80.sp,
                                             fontSize: 80.sp,
                                             color: Colors.white,
                                           ),
@@ -787,8 +808,8 @@ class _HomeViewState extends State<HomeView> {
                           Padding(
                               padding: EdgeInsets.only(left: 0.w),
                               child: Container(
-                                padding: EdgeInsets.all(10),
-                                margin: EdgeInsets.symmetric(horizontal: 10),
+                                padding: EdgeInsets.all(10.h),
+                                margin: EdgeInsets.symmetric(horizontal: 10.h),
                                 decoration: BoxDecoration(
                                   color: Colors.deepPurple,
                                   boxShadow: [

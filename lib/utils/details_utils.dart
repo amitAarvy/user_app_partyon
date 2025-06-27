@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:user/utils/utils.dart';
 
-PreferredSizeWidget eventAppBar(String title) => AppBar(
+PreferredSizeWidget eventAppBar(String title, bool isFolded) => AppBar(
       automaticallyImplyLeading: false,
       title: Stack(
         children: [
@@ -25,7 +25,7 @@ PreferredSizeWidget eventAppBar(String title) => AppBar(
                   child: Center(
                     child: Text(
                       title.capitalizeFirst!,
-                      style: GoogleFonts.montserrat(fontSize: 42.sp, fontWeight: FontWeight.w600),
+                      style: GoogleFonts.montserrat(fontSize: isFolded ? 24.sp : 42.sp, fontWeight: FontWeight.w600),
                     ),
                   ),
                 )
@@ -46,7 +46,7 @@ PreferredSizeWidget eventAppBar(String title) => AppBar(
                     child: Center(
                         child: Text(
                       "PartyOn",
-                      style: GoogleFonts.dancingScript(color: Colors.white, fontSize: 80.sp),
+                      style: GoogleFonts.dancingScript(color: Colors.white, fontSize: isFolded ? 40.sp : 80.sp),
                     ))
                     //Image.asset("assets/logo.png"),
                     ),
@@ -63,7 +63,7 @@ PreferredSizeWidget eventAppBar(String title) => AppBar(
       backgroundColor: themeRed(),
     );
 
-Widget aboutDetails(String assets, String title, String content) => Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+Widget aboutDetails(String assets, String title, String content, bool isFolded) => Row(mainAxisAlignment: MainAxisAlignment.start, children: [
       SizedBox(height: 70.h, width: 70.h, child: Image.asset(assets, fit: BoxFit.contain)),
       SizedBox(width: 50.w),
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -78,4 +78,4 @@ Widget aboutDetails(String assets, String title, String content) => Row(mainAxis
               style: GoogleFonts.ubuntu(color: Colors.white),
             ).marginAll(10.w))
       ])
-    ]).marginOnly(bottom: 30.w, top: 30.w, left: 10.w);
+    ]).marginOnly(bottom: isFolded ? 10.w : 30.w, top: isFolded ? 0.w : 30.w, left: 10.w);

@@ -81,6 +81,7 @@ Widget textField(
   isPinCode = false,
   isPhone = false,
   readyOnly = false,
+  isFolded = false,
 }) =>
     Container(
       width: Get.width,
@@ -88,7 +89,7 @@ Widget textField(
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.all(Radius.circular(20)),
       ),
-      padding: EdgeInsets.only(left: 20.w, right: 20.w),
+      padding: EdgeInsets.only(left: isFolded ? 0.w : 20.w, right: isFolded ? 0.w : 20.w),
       child: TextField(
         readOnly: readyOnly == true
             ? readyOnly
@@ -111,7 +112,7 @@ Widget textField(
           ),
           hintStyle: GoogleFonts.ubuntu(),
           labelText: label,
-          labelStyle: TextStyle(color: Colors.white70, fontSize: 40.sp),
+          labelStyle: TextStyle(color: Colors.white70, fontSize: isFolded ? 16.sp : 40.sp),
         ),
       ),
     ).marginOnly(left: 30.w, right: 30.w, bottom: 30.h, top: 20.h);
@@ -149,7 +150,7 @@ String getMonthName(int monthNum) {
 
 final HomeController homeController = Get.put(HomeController());
 
-Widget drawer() => Container(
+Widget drawer({isFolded = false}) => Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -176,7 +177,7 @@ Widget drawer() => Container(
               backgroundImage: const AssetImage('assets/profile.png'),
               radius: 150.h,
               backgroundColor: Colors.black,
-            ).marginAll(20.h),
+            ),
           ),
           Obx(
             () => Text(
@@ -198,7 +199,7 @@ Widget drawer() => Container(
             endIndent: 50.w,
           ),
           SizedBox(
-            height: Get.width,
+            height: Get.width - (isFolded ? 400 : 0),
             width: Get.width,
             child: Stack(
               children: [

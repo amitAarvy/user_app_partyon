@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
@@ -49,6 +50,7 @@ class _BookEventsState extends State<BookEvents> {
   final BookingProvider bookingProvider = Get.put(BookingProvider());
   TextEditingController couponController = TextEditingController();
   String eventOrganiserID = '';
+  bool isFolded = false;
   ValueNotifier<bool> isLoadingEvent = ValueNotifier(false);
   // TextEditingController coupon = TextEditingController();
   // ValueNotifier<double> totalAmount = ValueNotifier(0.0);
@@ -216,6 +218,21 @@ class _BookEventsState extends State<BookEvents> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Detect fold (hinge) using displayFeatures
+    final displayFeatures = MediaQuery.of(context).displayFeatures;
+
+    // Hinge is considered if there's a display feature of type 'hinge'
+    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
+
+    setState(() {
+      isFolded = isFoldedPhone;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
@@ -227,7 +244,7 @@ class _BookEventsState extends State<BookEvents> {
             children: [
               Text(
                 kIsWeb ? "Partyon" : 'Book Events',
-                style: GoogleFonts.ubuntu(fontSize: 50.sp, color: Colors.white),
+                style: GoogleFonts.ubuntu(fontSize: isFolded ? 24.sp : 50.sp, color: Colors.white),
               ),
             ],
           ),
@@ -250,7 +267,7 @@ class _BookEventsState extends State<BookEvents> {
                 child: Text(
                   'Table Layout',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.ubuntu(color: Colors.white, fontSize: 35.sp),
+                  style: GoogleFonts.ubuntu(color: Colors.white, fontSize: isFolded ? 19.sp : 35.sp),
                 ),
               ),
             ).paddingAll(10.w),
@@ -347,7 +364,7 @@ class _BookEventsState extends State<BookEvents> {
                                           overflow: TextOverflow.ellipsis,
                                           style: GoogleFonts.ubuntu(
                                             color: Colors.white,
-                                            fontSize: 50.sp,
+                                            fontSize: isFolded ? 24.sp : 50.sp,
                                           ),
                                         ),
                                         Text(
@@ -355,7 +372,7 @@ class _BookEventsState extends State<BookEvents> {
                                           overflow: TextOverflow.visible,
                                           style: GoogleFonts.ubuntu(
                                             color: Colors.orange,
-                                            fontSize: 50.sp,
+                                            fontSize: isFolded ? 24.sp : 50.sp,
                                           ),
                                         ),
                                         Row(
@@ -367,7 +384,7 @@ class _BookEventsState extends State<BookEvents> {
                                               overflow: TextOverflow.visible,
                                               style: GoogleFonts.ubuntu(
                                                 color: Colors.grey,
-                                                fontSize: 50.sp,
+                                                fontSize: isFolded ? 24.sp : 50.sp,
                                               ),
                                             ),
                                             Text(
@@ -375,7 +392,7 @@ class _BookEventsState extends State<BookEvents> {
                                               overflow: TextOverflow.visible,
                                               style: GoogleFonts.ubuntu(
                                                 color: Colors.grey,
-                                                fontSize: 50.sp,
+                                                fontSize: isFolded ? 24.sp : 50.sp,
                                               ),
                                             ),
                                           ],
@@ -398,13 +415,15 @@ class _BookEventsState extends State<BookEvents> {
                           SizedBox(
                             height: 10,
                           ),
-                          Row(
-                            children: [
-                              // Icon(Icons.category, color: Colors.white, size: 60.h),
-                              const SizedBox(width: 5),
-                              Text(" ${genre}", style: GoogleFonts.adamina(fontSize: 15, color: Colors.white)),
-                            ],
-                          ),
+                          Padding(
+                              padding: EdgeInsets.only(left: 10.w, right: 10.w),
+                              child: Row(
+                                children: [
+                                  // Icon(Icons.category, color: Colors.white, size: 60.h),
+                                  const SizedBox(width: 5),
+                                  Text(" ${genre}", style: GoogleFonts.adamina(fontSize: 15, color: Colors.white)),
+                                ],
+                              )),
                           SizedBox(
                             height: 10,
                           ),
@@ -423,7 +442,7 @@ class _BookEventsState extends State<BookEvents> {
                                   ),
                                   color: Colors.black,
                                   child: Container(
-                                      width: 400,
+                                      width: 300,
                                       decoration: BoxDecoration(
                                         // boxShadow: [
                                         //   BoxShadow(
@@ -436,7 +455,7 @@ class _BookEventsState extends State<BookEvents> {
                                         color: Colors.black,
                                         borderRadius: BorderRadius.circular(15),
                                       ),
-                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 20),
+                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 24),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.stretch,
                                         children: [
@@ -569,7 +588,7 @@ class _BookEventsState extends State<BookEvents> {
                                    ],)],),
                            ),*/
                           Padding(
-                              padding: EdgeInsets.only(left: 20.w),
+                              padding: EdgeInsets.only(left: 24.w),
                               child: Align(
                                 alignment: Alignment.centerLeft,
                                 child: Text("Lineup", style: GoogleFonts.adamina(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.white, decorationColor: Colors.white)),
@@ -940,7 +959,7 @@ class _BookEventsState extends State<BookEvents> {
                                 ValueListenableBuilder(
                                   valueListenable: applyCoupon,
                                   builder: (context, bool value, child) => SizedBox(
-                                    width: 800.w,
+                                    width: Get.width - 90,
                                     child: TextField(
                                       readOnly: value,
                                       keyboardType: TextInputType.text, // or any type like TextInputType.number
@@ -1167,8 +1186,8 @@ class _BookEventsState extends State<BookEvents> {
                                 valueListenable: couponDetail,
                                 builder: (context, Map<String, dynamic>? data, child) => Text(
                                   'Applied Discount : ${data == null ? '0' : data['data']['discount']}',
-                                  style: GoogleFonts.ubuntu(color: Colors.grey, fontSize: 50.sp),
-                                ).paddingOnly(left: 24.w),
+                                  style: GoogleFonts.ubuntu(color: Colors.grey, fontSize: isFolded ? 24.sp : 50.sp),
+                                ).paddingOnly(left: isFolded ? 24.w : 60.w),
                               )
                             ],
                           ),
@@ -1369,10 +1388,10 @@ class _BookEventsState extends State<BookEvents> {
             Text(
               'Total',
               style: GoogleFonts.merriweather(
-                fontSize: 60.sp,
+                fontSize: isFolded ? 24.sp : 60.sp,
                 color: Colors.white,
               ),
-            ).paddingAll(60.w).paddingOnly(bottom: 60.w),
+            ).paddingAll(isFolded ? 24.sp : 60.w).paddingOnly(bottom: 0.w),
             Align(
               alignment: Alignment.center,
               child: Column(
@@ -1519,7 +1538,7 @@ class _BookEventsState extends State<BookEvents> {
                                               '₹ ${totalAmount == 0.0 ? tablePrice + entryPrice : totalAmount}',
                                               style: GoogleFonts.ubuntu(
                                                 color: Colors.white,
-                                                fontSize: 45.sp,
+                                                fontSize: isFolded ? 24.sp : 42.sp,
                                               ),
                                             ),
                                             SizedBox(width: 14.w),
@@ -1544,7 +1563,7 @@ class _BookEventsState extends State<BookEvents> {
                   ),
                 ],
               ),
-            ).paddingAll(60.w),
+            ).paddingAll(isFolded ? 24.w : 60.w),
           ],
         ),
       ),

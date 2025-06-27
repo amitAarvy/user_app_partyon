@@ -32,7 +32,7 @@ class PhoneLogin extends StatefulWidget {
 
 class _PhoneLoginState extends State<PhoneLogin> {
   bool isFolded = false;
-  final templateId = "685cec7ad6fc05713b4079e2";
+
   dynamic theme;
   late Msg91 msg91;
   late dynamic msgOtp;
@@ -45,11 +45,6 @@ class _PhoneLoginState extends State<PhoneLogin> {
     msgOtp = msg91.getOtp();
 
     print('yes login page  is ');
-  }
-
-  String generateOtp() {
-    final random = Random();
-    return (1000 + random.nextInt(9000)).toString(); // Ensures 4-digit OTP
   }
 
   Future<void> startTimer() async {
@@ -65,7 +60,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
 
   bool sendOtp = false;
   final TextEditingController _phoneController = TextEditingController();
-  String? generatedOtp;
+
   FirebaseAuth auth = FirebaseAuth.instance;
 
   Future<void> _phoneSignIn(var phone) async {
@@ -77,16 +72,12 @@ class _PhoneLoginState extends State<PhoneLogin> {
 
       // Error handling.
       try {
-        generatedOtp = generateOtp();
-        Map<String, String> variables = {"OTP": generatedOtp!};
-        final response = await msg91.getSMS().send(flowId: templateId, recipient: SmsRecipient(mobile: "+91$phone", key: variables));
-
-        final message = response["message"];
-        if (message != null && message.toString().trim().isNotEmpty) {
+        final response = await msgOtp.send(mobileNumber: "+91$phone", options: OtpOptions(templateId: "685cec7ad6fc05713b4079e2"));
+        print(response.toString());
+        print("*****");
+        if (response == 'Success') {
           print('OTP sent successfully!');
           await EasyLoading.dismiss();
-          startTimer();
-
           await Get.defaultDialog(
             title: 'Enter OTP',
             content: Column(
@@ -113,9 +104,12 @@ class _PhoneLoginState extends State<PhoneLogin> {
                   final String code = otpTextController.text.trim();
 
                   try {
-                    print(generatedOtp);
-                    print(code);
-                    if (generatedOtp == code) {
+                    final response = await msg91.getOtp().verify(
+                          otp: code,
+                          mobileNumber: '+91$phone',
+                        );
+
+                    if (response == 'Success') {
                       final url = Uri.parse('https://generatetoken-774845460870.asia-south1.run.app');
                       final response = await http.post(
                         url,
@@ -137,7 +131,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
                           final userDoc = await FirebaseFirestore.instance.collection('User').doc(userCredential.user!.uid).get();
 
                           if (userDoc.exists) {
-                            await Get.off(() => const BottomNavigationBarExample());
+                            Get.off(() => const VenueView());
                           } else {
                             Get.off(UserInfoData(
                               email: userCredential.user?.email ?? '',
@@ -165,25 +159,20 @@ class _PhoneLoginState extends State<PhoneLogin> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                  if (otpController.count.value != 0) {
-                    await Fluttertoast.showToast(msg: 'Please wait for few seconds before resending.');
-                  } else {
-                    try {
-                      startTimer();
-                      generatedOtp = generateOtp();
-                      print("reseent otp");
-                      print(generatedOtp);
-                      Map<String, String> variables = {"OTP": generatedOtp!};
-                      final response = await msg91.getSMS().send(flowId: templateId, recipient: SmsRecipient(mobile: "+91$phone", key: variables));
+                  final String code = otpTextController.text.trim();
 
-                      final message = response["message"];
-                      if (message != null && message.toString().trim().isNotEmpty) {
-                        await Fluttertoast.showToast(msg: 'OTP resent successfully');
-                      } else {
-                        await Fluttertoast.showToast(msg: 'Failed to resend OTP');
-                      }
-                    } catch (e) {
-                      await Fluttertoast.showToast(msg: e.toString());
+                  if (code.isNotEmpty) {
+                    Get.back();
+                    final response = await msg91.getOtp().resend(mobileNumber: phone, type: ResendOTPType.VOICE);
+
+                    print(response.toString());
+                    print("*****");
+                    if (response == 'Success') {
+                      // Style guide.
+                      await Fluttertoast.showToast(msg: 'Otp sent successfully');
+                    } else {
+                      // Style guide.
+                      await Fluttertoast.showToast(msg: 'Failed to send OTP');
                     }
                   }
                 },

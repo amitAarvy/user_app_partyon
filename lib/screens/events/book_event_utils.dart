@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
@@ -21,6 +23,7 @@ class EntranceDataWidget extends StatefulWidget {
 }
 
 class _EntranceDataWidgetState extends State<EntranceDataWidget> {
+  bool isFolded = false;
   late Stream<List<dynamic>> entranceListStream;
   final BookingProvider bookingProvider = Get.put(BookingProvider());
 
@@ -36,22 +39,27 @@ class _EntranceDataWidgetState extends State<EntranceDataWidget> {
     super.dispose();
   }
 
-  Map<dynamic, dynamic>? _nextAvailableSubCategory(
-      List<dynamic> subCategories) =>
-      subCategories.firstWhere(
-            (subCategory) =>
-        int.parse(subCategory['entryCategoryCountLeft'].toString()) > 0,
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Detect fold (hinge) using displayFeatures
+    final displayFeatures = MediaQuery.of(context).displayFeatures;
+
+    // Hinge is considered if there's a display feature of type 'hinge'
+    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
+
+    setState(() {
+      isFolded = isFoldedPhone;
+    });
+  }
+
+  Map<dynamic, dynamic>? _nextAvailableSubCategory(List<dynamic> subCategories) => subCategories.firstWhere(
+        (subCategory) => int.parse(subCategory['entryCategoryCountLeft'].toString()) > 0,
         orElse: () => null,
       );
 
-  Widget entranceCategoryDataRow(
-      String categoryName,
-      String entryCategoryName,
-      int categoryEntryLeft,
-      double entryCategoryPrice,
-      List subCategories,
-      int index) =>
-      Column(
+  Widget entranceCategoryDataRow(String categoryName, String entryCategoryName, int categoryEntryLeft, double entryCategoryPrice, List subCategories, int index) => Column(
         children: [
           Row(
             children: [
@@ -62,7 +70,7 @@ class _EntranceDataWidgetState extends State<EntranceDataWidget> {
             ],
           ).paddingOnly(top: 30.h, left: 30.w),
           SizedBox(
-            height:kIsWeb? 500.h:200.h,
+            height: kIsWeb ? 500.h : 200.h,
             width: Get.width,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,7 +84,7 @@ class _EntranceDataWidgetState extends State<EntranceDataWidget> {
                         textAlign: TextAlign.center,
                         style: GoogleFonts.ubuntu(
                           color: Colors.white,
-                          fontSize: 45.sp,
+                          fontSize: isFolded ? 24.sp : 45.sp,
                         ),
                       ),
                     ),
@@ -87,16 +95,12 @@ class _EntranceDataWidgetState extends State<EntranceDataWidget> {
                   child: SizedBox(
                     child: Center(
                       child: Obx(() => Text(
-                        categoryEntryLeft < 0
-                            ? 'Sold Out'
-                            : '${categoryEntryLeft - bookingProvider.getBookingCount(index)} left',
-                        style: GoogleFonts.ubuntu(
-                          color: categoryEntryLeft < 0
-                              ? Colors.red
-                              : Colors.orange,
-                          fontSize: 45.sp,
-                        ),
-                      )),
+                            categoryEntryLeft < 0 ? 'Sold Out' : '${categoryEntryLeft - bookingProvider.getBookingCount(index)} left',
+                            style: GoogleFonts.ubuntu(
+                              color: categoryEntryLeft < 0 ? Colors.red : Colors.orange,
+                              fontSize: isFolded ? 24.sp : 45.sp,
+                            ),
+                          )),
                     ),
                   ),
                 ),
@@ -111,7 +115,7 @@ class _EntranceDataWidgetState extends State<EntranceDataWidget> {
                               'Free',
                               style: GoogleFonts.ubuntu(
                                 color: Colors.green,
-                                fontSize: 45.sp,
+                                fontSize: isFolded ? 24.sp : 45.sp,
                               ),
                             )
                           else
@@ -119,7 +123,7 @@ class _EntranceDataWidgetState extends State<EntranceDataWidget> {
                               '₹ $entryCategoryPrice',
                               style: GoogleFonts.ubuntu(
                                 color: Colors.white,
-                                fontSize: 45.sp,
+                                fontSize: isFolded ? 24.sp : 45.sp,
                               ),
                             ),
                         ],
@@ -138,31 +142,20 @@ class _EntranceDataWidgetState extends State<EntranceDataWidget> {
                             children: [
                               GestureDetector(
                                 onTap: () {
-                                  if (bookingProvider.getBookingCount(index) >
-                                      0) {
+                                  if (bookingProvider.getBookingCount(index) > 0) {
                                     bookingProvider.decBookingCount(index);
                                   }
 
-                                  updateBookingList(
-                                      index,
-                                      subCategories,
-                                      entryCategoryPrice.toDouble(),
-                                      bookingProvider,
-                                      categoryName: categoryName);
+                                  updateBookingList(index, subCategories, entryCategoryPrice.toDouble(), bookingProvider, categoryName: categoryName);
 
-                                  Provider.of<EntryController>(context,
-                                      listen: false)
-                                      .updatePriceEntryList(
-                                      bookingProvider.getBookingList);
+                                  Provider.of<EntryController>(context, listen: false).updatePriceEntryList(bookingProvider.getBookingList);
                                   if (kDebugMode) {
-                                    print(Provider.of<EntryController>(context,
-                                        listen: false)
-                                        .entryList);
+                                    print(Provider.of<EntryController>(context, listen: false).entryList);
                                   }
                                 },
                                 child: Icon(
                                   Icons.remove,
-                                  size: 70.sp,
+                                  size: isFolded ? 34.sp : 70.sp,
                                   color: Colors.orange,
                                 ),
                               ).paddingOnly(
@@ -170,34 +163,23 @@ class _EntranceDataWidgetState extends State<EntranceDataWidget> {
                                 right: 10.w,
                               ),
                               Obx(
-                                    () => Text(
+                                () => Text(
                                   '${bookingProvider.getBookingCount(index)}',
-                                  style: GoogleFonts.ubuntu(
-                                      color: Colors.white, fontSize: 45.sp),
+                                  style: GoogleFonts.ubuntu(color: Colors.white, fontSize: isFolded ? 24.sp : 45.sp),
                                 ),
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  if (categoryEntryLeft != 0 &&
-                                      bookingProvider.getBookingCount(index) <
-                                          categoryEntryLeft) {
+                                  if (categoryEntryLeft != 0 && bookingProvider.getBookingCount(index) < categoryEntryLeft) {
                                     bookingProvider.incBookingCount(index);
 
-                                    updateBookingList(
-                                        index,
-                                        subCategories,
-                                        entryCategoryPrice.toDouble(),
-                                        bookingProvider,
-                                        categoryName: categoryName);
-                                    Provider.of<EntryController>(context,
-                                        listen: false)
-                                        .updatePriceEntryList(
-                                        bookingProvider.getBookingList);
+                                    updateBookingList(index, subCategories, entryCategoryPrice.toDouble(), bookingProvider, categoryName: categoryName);
+                                    Provider.of<EntryController>(context, listen: false).updatePriceEntryList(bookingProvider.getBookingList);
                                   }
                                 },
                                 child: Icon(
                                   Icons.add,
-                                  size: 70.sp,
+                                  size: isFolded ? 35.sp : 70.sp,
                                   color: Colors.orange,
                                 ),
                               ).paddingOnly(
@@ -219,82 +201,56 @@ class _EntranceDataWidgetState extends State<EntranceDataWidget> {
 
   @override
   Widget build(BuildContext context) => StreamBuilder(
-    stream: FirebaseFirestore.instance.collection('Events').doc(widget.eventID).snapshots(),
-    builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-      if (!snapshot.hasData) {
-        return const CircularProgressIndicator();
-      } else {
-        final entranceList = snapshot.data!['entranceList'];
+        stream: FirebaseFirestore.instance.collection('Events').doc(widget.eventID).snapshots(),
+        builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+          if (!snapshot.hasData) {
+            return const CircularProgressIndicator();
+          } else {
+            final entranceList = snapshot.data!['entranceList'];
 
-        return ListView.builder(
-          itemCount: entranceList.length,
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          itemBuilder: (context, index) {
-            final entrance = entranceList[index];
-            final categoryName = entrance['categoryName'];
-            List subCategories = entrance['subCategory'];
+            return ListView.builder(
+              itemCount: entranceList.length,
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                final entrance = entranceList[index];
+                final categoryName = entrance['categoryName'];
+                List subCategories = entrance['subCategory'];
 
-            // Find the next available subcategory
-            final availableSubCategory =
-            _nextAvailableSubCategory(subCategories);
+                // Find the next available subcategory
+                final availableSubCategory = _nextAvailableSubCategory(subCategories);
 
-            if (availableSubCategory != null) {
-              final entryCategoryName =
-              availableSubCategory['entryCategoryName'];
-              final entryCategoryPrice = int.parse(
-                  availableSubCategory['entryCategoryPrice'].toString());
-              final categoryEntryLeft = int.parse(
-                  availableSubCategory['entryCategoryCountLeft']
-                      .toString());
+                if (availableSubCategory != null) {
+                  final entryCategoryName = availableSubCategory['entryCategoryName'];
+                  final entryCategoryPrice = int.parse(availableSubCategory['entryCategoryPrice'].toString());
+                  final categoryEntryLeft = int.parse(availableSubCategory['entryCategoryCountLeft'].toString());
 
-              SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-                if (bookingProvider.getBookingCount(index) >
-                    categoryEntryLeft) {
-                  bookingProvider.changeBookingCount(
-                      index, categoryEntryLeft);
+                  SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+                    if (bookingProvider.getBookingCount(index) > categoryEntryLeft) {
+                      bookingProvider.changeBookingCount(index, categoryEntryLeft);
+                    }
+                    updateBookingList(index, subCategories, entryCategoryPrice.toDouble(), bookingProvider, categoryName: categoryName);
+                    Provider.of<EntryController>(context, listen: false).updatePriceEntryList(bookingProvider.getBookingList);
+                  });
+
+                  return entranceCategoryDataRow(categoryName, entryCategoryName, categoryEntryLeft, entryCategoryPrice.toDouble(), subCategories, index);
+                } else {
+                  SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+                    bookingProvider.changeBookingCount(index, 0);
+                    updateBookingList(index, subCategories, 0, bookingProvider, categoryName: categoryName);
+                    Provider.of<EntryController>(context, listen: false).updatePriceEntryList(bookingProvider.getBookingList);
+                  });
+                  final emptySubCategory = subCategories[0];
+                  final entryCategoryName = emptySubCategory['entryCategoryName'];
+                  final entryCategoryPrice = int.parse(emptySubCategory['entryCategoryPrice'].toString());
+                  final categoryEntryLeft = int.parse(0.toString());
+                  return entranceCategoryDataRow(categoryName, entryCategoryName, categoryEntryLeft, entryCategoryPrice.toDouble(), subCategories, index);
                 }
-                updateBookingList(index, subCategories,
-                    entryCategoryPrice.toDouble(), bookingProvider,
-                    categoryName: categoryName);
-                Provider.of<EntryController>(context, listen: false)
-                    .updatePriceEntryList(bookingProvider.getBookingList);
-              });
-
-              return entranceCategoryDataRow(
-                  categoryName,
-                  entryCategoryName,
-                  categoryEntryLeft,
-                  entryCategoryPrice.toDouble(),
-                  subCategories,
-                  index);
-            } else {
-              SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-                bookingProvider.changeBookingCount(index, 0);
-                updateBookingList(index, subCategories, 0, bookingProvider,
-                    categoryName: categoryName);
-                Provider.of<EntryController>(context, listen: false)
-                    .updatePriceEntryList(bookingProvider.getBookingList);
-              });
-              final emptySubCategory = subCategories[0];
-              final entryCategoryName =
-              emptySubCategory['entryCategoryName'];
-              final entryCategoryPrice = int.parse(
-                  emptySubCategory['entryCategoryPrice'].toString());
-              final categoryEntryLeft = int.parse(0.toString());
-              return entranceCategoryDataRow(
-                  categoryName,
-                  entryCategoryName,
-                  categoryEntryLeft,
-                  entryCategoryPrice.toDouble(),
-                  subCategories,
-                  index);
-            }
-          },
-        );
-      }
-    },
-  );
+              },
+            );
+          }
+        },
+      );
 }
 
 class TableList extends StatefulWidget {
@@ -308,182 +264,185 @@ class TableList extends StatefulWidget {
 }
 
 class _TableListState extends State<TableList> {
+  bool isFolded = false;
   BookingProvider bookingProvider = Get.put(BookingProvider());
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Detect fold (hinge) using displayFeatures
+    final displayFeatures = MediaQuery.of(context).displayFeatures;
+
+    // Hinge is considered if there's a display feature of type 'hinge'
+    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
+
+    setState(() {
+      isFolded = isFoldedPhone;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) => Consumer<EntryTableController>(
-    builder: (BuildContext context, EntryTableController data,
-        Widget? child) =>
-    widget.tableData['tableAvail'] != 0
-        ? SizedBox(
-      height:kIsWeb?300.h: 200.h,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GestureDetector(
-            onTap: () {
-              Get.defaultDialog(
-                title: 'Includes',
-                content: Text(
-                  '${widget.tableData["tableInclusion"] != '' ? widget.tableData["tableInclusion"] : 'Only Entry'}',
-                  style: GoogleFonts.ubuntu(color: Colors.black),
-                ),
-              );
-            },
-            child: SizedBox(
-              width: Get.width / 4.5,
-              child: Center(
-                child: Text(
-                  widget.tableData['tableName'],
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.ubuntu(
-                    color: Colors.white,
-                    fontSize: 45.sp,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: Get.width / 4.5,
-            child: widget.tableData['tableLeft'] != 0
-                ? Center(
-              child: Text(
-                "${widget.tableData["tableLeft"] - data.numTable[widget.index]} left",
-                style: GoogleFonts.ubuntu(
-                  color: Colors.red,
-                  fontSize: 45.sp,
-                ),
-              ),
-            )
-                : Center(
-              child: Text(
-                'Sold Out',
-                style: GoogleFonts.ubuntu(
-                  color: Colors.red,
-                  fontSize: 45.sp,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: Get.width / 4.5,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Seats: ${widget.tableData["seatsAvail"]}",
-                  style: GoogleFonts.ubuntu(
-                    color: Colors.white,
-                    fontSize: 45.sp,
-                  ),
-                ),
-                if (widget.tableData['tablePrice'] != 0)
-                  Text(
-                    "₹ ${widget.tableData["tablePrice"]}",
-                    style: GoogleFonts.ubuntu(
-                      color: Colors.white,
-                      fontSize: 45.sp,
-                    ),
-                  )
-                else
-                  Text(
-                    'Free',
-                    style: GoogleFonts.ubuntu(
-                      color: Colors.green,
-                      fontSize: 45.sp,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          SizedBox(
-            width: Get.width / 4.5,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+        builder: (BuildContext context, EntryTableController data, Widget? child) => widget.tableData['tableAvail'] != 0
+            ? SizedBox(
+                height: kIsWeb ? 300.h : 200.h,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     GestureDetector(
                       onTap: () {
-                        if (data.numTable[widget.index] > 0) {
-                          data.updateNumTable(
-                            widget.index,
-                            data.numTable[widget.index] - 1,
-                          );
-                          bookingProvider.modifyTableBookingList(
-                            tableIndex: widget.index,
-                            tableName:
-                            widget.tableData["tableName"],
-                            bookingCount:
-                            data.numTable[widget.index],
-                            bookingAmount:
-                            double.parse(widget.tableData["tablePrice"].toString()),
-                            seatsAvailable:
-                            widget.tableData["seatsAvail"],
-                          );
-                        }
+                        Get.defaultDialog(
+                          title: 'Includes',
+                          content: Text(
+                            '${widget.tableData["tableInclusion"] != '' ? widget.tableData["tableInclusion"] : 'Only Entry'}',
+                            style: GoogleFonts.ubuntu(color: Colors.black),
+                          ),
+                        );
                       },
-                      child: Center(
-                        child: Icon(
-                          Icons.remove,
-                          size: 70.sp,
-                          color: Colors.orange,
-                        ),
-                      ).paddingOnly(left: 20.w, right: 15.w),
-                    ),
-                    Text(
-                      '${data.numTable[widget.index]}',
-                      style: GoogleFonts.ubuntu(
-                        color: Colors.white,
-                        fontSize: 45.sp,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        if (widget.tableData['tableLeft'] != 0 &&
-                            data.numTable[widget.index] <
-                                widget.tableData['tableLeft']) {
-                          data.updateNumTable(
-                            widget.index,
-                            data.numTable[widget.index] + 1,
-                          );
-                          bookingProvider.modifyTableBookingList(
-                            tableIndex: widget.index,
-                            tableName:
-                            widget.tableData["tableName"],
-                            bookingCount:
-                            data.numTable[widget.index],
-                            bookingAmount: double.parse(widget
-                                .tableData["tablePrice"]
-                                .toString()),
-                            seatsAvailable:
-                            widget.tableData["seatsAvail"],
-                          );
-                        }
-                        if (kDebugMode) {
-                          print(data.tableName);
-                        }
-                      },
-                      child: Center(
-                        child: Icon(
-                          Icons.add,
-                          size: 70.sp,
-                          color: Colors.orange,
+                      child: SizedBox(
+                        width: Get.width / 4.5,
+                        child: Center(
+                          child: Text(
+                            widget.tableData['tableName'],
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.ubuntu(
+                              color: Colors.white,
+                              fontSize: isFolded ? 24.sp : 45.sp,
+                            ),
+                          ),
                         ),
                       ),
-                    ).paddingOnly(left: 20.w, right: 15.w)
+                    ),
+                    SizedBox(
+                      width: Get.width / 4.5,
+                      child: widget.tableData['tableLeft'] != 0
+                          ? Center(
+                              child: Text(
+                                "${widget.tableData["tableLeft"] - data.numTable[widget.index]} left",
+                                style: GoogleFonts.ubuntu(
+                                  color: Colors.red,
+                                  fontSize: isFolded ? 24.sp : 45.sp,
+                                ),
+                              ),
+                            )
+                          : Center(
+                              child: Text(
+                                'Sold Out',
+                                style: GoogleFonts.ubuntu(
+                                  color: Colors.red,
+                                  fontSize: isFolded ? 24.sp : 45.sp,
+                                ),
+                              ),
+                            ),
+                    ),
+                    SizedBox(
+                      width: Get.width / 4.5,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Seats: ${widget.tableData["seatsAvail"]}",
+                            style: GoogleFonts.ubuntu(
+                              color: Colors.white,
+                              fontSize: isFolded ? 24.sp : 45.sp,
+                            ),
+                          ),
+                          if (widget.tableData['tablePrice'] != 0)
+                            Text(
+                              "₹ ${widget.tableData["tablePrice"]}",
+                              style: GoogleFonts.ubuntu(
+                                color: Colors.white,
+                                fontSize: isFolded ? 24.sp : 45.sp,
+                              ),
+                            )
+                          else
+                            Text(
+                              'Free',
+                              style: GoogleFonts.ubuntu(
+                                color: Colors.green,
+                                fontSize: isFolded ? 24.sp : 45.sp,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      width: Get.width / 4.5,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  if (data.numTable[widget.index] > 0) {
+                                    data.updateNumTable(
+                                      widget.index,
+                                      data.numTable[widget.index] - 1,
+                                    );
+                                    bookingProvider.modifyTableBookingList(
+                                      tableIndex: widget.index,
+                                      tableName: widget.tableData["tableName"],
+                                      bookingCount: data.numTable[widget.index],
+                                      bookingAmount: double.parse(widget.tableData["tablePrice"].toString()),
+                                      seatsAvailable: widget.tableData["seatsAvail"],
+                                    );
+                                  }
+                                },
+                                child: Center(
+                                  child: Icon(
+                                    Icons.remove,
+                                    size: isFolded ? 35.sp : 70.sp,
+                                    color: Colors.orange,
+                                  ),
+                                ).paddingOnly(left: 20.w, right: 15.w),
+                              ),
+                              Text(
+                                '${data.numTable[widget.index]}',
+                                style: GoogleFonts.ubuntu(
+                                  color: Colors.white,
+                                  fontSize: isFolded ? 24.sp : 45.sp,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  if (widget.tableData['tableLeft'] != 0 && data.numTable[widget.index] < widget.tableData['tableLeft']) {
+                                    data.updateNumTable(
+                                      widget.index,
+                                      data.numTable[widget.index] + 1,
+                                    );
+                                    bookingProvider.modifyTableBookingList(
+                                      tableIndex: widget.index,
+                                      tableName: widget.tableData["tableName"],
+                                      bookingCount: data.numTable[widget.index],
+                                      bookingAmount: double.parse(widget.tableData["tablePrice"].toString()),
+                                      seatsAvailable: widget.tableData["seatsAvail"],
+                                    );
+                                  }
+                                  if (kDebugMode) {
+                                    print(data.tableName);
+                                  }
+                                },
+                                child: Center(
+                                  child: Icon(
+                                    Icons.add,
+                                    size: isFolded ? 35.sp : 70.sp,
+                                    color: Colors.orange,
+                                  ),
+                                ),
+                              ).paddingOnly(left: 20.w, right: 15.w)
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ).paddingOnly(left: 30.w, right: 30.w)
-        : Container(),
-  );
+              ).paddingOnly(left: 30.w, right: 30.w)
+            : Container(),
+      );
 }
 
 Stream<List<dynamic>> getEntranceListStream(String eventID) {
@@ -496,14 +455,11 @@ Stream<List<dynamic>> getEntranceListStream(String eventID) {
   });
 }
 
-Future<void> updateAsTransaction(String eventID, String categoryId,
-    String subcategoryId, int increment) async {
+Future<void> updateAsTransaction(String eventID, String categoryId, String subcategoryId, int increment) async {
   try {
-    DatabaseReference ref = FirebaseDatabase.instance.ref().child(
-        'Events/$eventID/entranceList/$categoryId/subCategory/$subcategoryId/entryCategoryCountLeft');
+    DatabaseReference ref = FirebaseDatabase.instance.ref().child('Events/$eventID/entranceList/$categoryId/subCategory/$subcategoryId/entryCategoryCountLeft');
     await ref.runTransaction((mutableData) {
-      return transaction.Transaction.success(
-          ((mutableData) as int? ?? 0) + increment);
+      return transaction.Transaction.success(((mutableData) as int? ?? 0) + increment);
       // else return Transaction.abort();
     });
   } on FirebaseException catch (e) {
@@ -513,9 +469,7 @@ Future<void> updateAsTransaction(String eventID, String categoryId,
   }
 }
 
-void updateBookingList(int index, List subCategories, double bookingAmount,
-    BookingProvider bookingProvider,
-    {required String categoryName}) {
+void updateBookingList(int index, List subCategories, double bookingAmount, BookingProvider bookingProvider, {required String categoryName}) {
   int subIndex = 0;
   for (int i = 0; i < subCategories.length; i++) {
     if (int.parse(subCategories[i]['entryCategoryCountLeft'].toString()) > 0) {
@@ -523,8 +477,5 @@ void updateBookingList(int index, List subCategories, double bookingAmount,
       break;
     }
   }
-  bookingProvider.modifyBookingList(
-      index, subIndex, bookingProvider.getBookingCount(index), bookingAmount,
-      subCategoryName: subCategories[subIndex]['entryCategoryName'],
-      categoryName: categoryName);
+  bookingProvider.modifyBookingList(index, subIndex, bookingProvider.getBookingCount(index), bookingAmount, subCategoryName: subCategories[subIndex]['entryCategoryName'], categoryName: categoryName);
 }

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -17,13 +19,30 @@ class BookingList extends StatefulWidget {
 }
 
 class _BookingListState extends State<BookingList> {
+  bool isFolded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Detect fold (hinge) using displayFeatures
+    final displayFeatures = MediaQuery.of(context).displayFeatures;
+
+    // Hinge is considered if there's a display feature of type 'hinge'
+    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
+
+    setState(() {
+      isFolded = isFoldedPhone;
+    });
+  }
+
   Widget titleWidget(String title) => Expanded(
       child: SizedBox(
           child: Center(
               child: Text(title,
                   style: GoogleFonts.ubuntu(
                     color: Colors.orange,
-                    fontSize: 50.sp,
+                    fontSize: isFolded ? 24.sp : 50.sp,
                   )))));
 
   @override
@@ -40,7 +59,7 @@ class _BookingListState extends State<BookingList> {
                   'My Bookings',
                   style: GoogleFonts.ubuntu(
                     color: Colors.white,
-                    fontSize: 60.sp,
+                    fontSize: isFolded ? 24.sp : 60.sp,
                   ),
                 ),
               ],
@@ -81,7 +100,7 @@ class _BookingListState extends State<BookingList> {
                             'No Bookings found',
                             style: GoogleFonts.ubuntu(
                               color: Colors.white,
-                              fontSize: 60.sp,
+                              fontSize: isFolded ? 24.sp : 60.sp,
                             ),
                           ),
                         ),

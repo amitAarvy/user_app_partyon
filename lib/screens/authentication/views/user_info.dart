@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:bottom_picker/bottom_picker.dart';
 import 'package:bottom_picker/resources/arrays.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,6 +22,7 @@ import 'package:user/screens/authentication/views/phone.dart';
 import 'package:user/screens/home/view/home_view.dart';
 import 'package:user/utils/cities.dart';
 import 'package:user/utils/utils.dart';
+import 'package:flutter/widgets.dart';
 
 import '../../bottom-screens.dart';
 
@@ -41,7 +44,7 @@ class _UserInfoDataState extends State<UserInfoData> {
   String location = 'Null, Press Button';
   bool dialogOther = false;
   DateTime? _selectedDate;
-
+  bool isFolded = false;
   ValueNotifier<DateTime?> selectDOB = ValueNotifier(null);
 
   void _showDOBPickerDialog(BuildContext context) {
@@ -290,6 +293,21 @@ class _UserInfoDataState extends State<UserInfoData> {
     setState(() {});
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Detect fold (hinge) using displayFeatures
+    final displayFeatures = MediaQuery.of(context).displayFeatures;
+
+    // Hinge is considered if there's a display feature of type 'hinge'
+    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
+
+    setState(() {
+      isFolded = isFoldedPhone;
+    });
+  }
+
   TextEditingController _phoneController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -312,6 +330,7 @@ class _UserInfoDataState extends State<UserInfoData> {
 
     List<String> itemsCity = ['Select City', ...stateCity];
 
+    print("isFolded: $isFolded");
     return Scaffold(
       backgroundColor: matte(),
       appBar: widget.isProfile
@@ -386,15 +405,12 @@ class _UserInfoDataState extends State<UserInfoData> {
                   ],
                 ),
               ),
-              textField(
-                'Enter Name',
-                _userName,
-              ),
+              textField('Enter Name', _userName, isFolded: isFolded),
               if (widget.isAnonymous)
                 SizedBox(
                   height: 5,
                 ),
-              if (widget.isAnonymous) textField('Enter mobile number', _phoneController, isNum: true),
+              if (widget.isAnonymous) textField('Enter mobile number', _phoneController, isNum: true, isFolded: isFolded),
               // Container(
               //   decoration: const BoxDecoration(
               //     borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -422,7 +438,7 @@ class _UserInfoDataState extends State<UserInfoData> {
               //   ).marginSymmetric(horizontal: 50.w),
               // ),
               SizedBox(
-                height: 5,
+                height: isFolded ? 10 : 5,
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -435,6 +451,9 @@ class _UserInfoDataState extends State<UserInfoData> {
                   ],
                 ),
               ),
+              SizedBox(
+                height: 5,
+              ),
               ValueListenableBuilder(
                 valueListenable: selectDOB,
                 builder: (context, value, child) => GestureDetector(
@@ -444,7 +463,7 @@ class _UserInfoDataState extends State<UserInfoData> {
                     },
                     child: Container(
                       height: 130.h,
-                      width: Get.width - 100.w,
+                      width: Get.width - (isFolded ? 55.w : 100.w),
                       decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(5)), border: Border.all(color: Colors.grey)),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -461,7 +480,7 @@ class _UserInfoDataState extends State<UserInfoData> {
                     )),
               ),
               SizedBox(
-                height: 5,
+                height: isFolded ? 10 : 5,
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -474,7 +493,6 @@ class _UserInfoDataState extends State<UserInfoData> {
                   ],
                 ),
               ),
-
               // textField("Email", _email,
               //     isEmail: true, isPhone: widget.isPhone),
               // SizedBox(
@@ -482,7 +500,7 @@ class _UserInfoDataState extends State<UserInfoData> {
               // ),
               Container(
                 height: 130.h,
-                width: Get.width - 100.w,
+                width: Get.width - (isFolded ? 55.w : 100.w),
                 decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(5)), border: Border.all(color: Colors.grey)),
                 child: Center(
                   child: DropdownButton<String>(
@@ -521,7 +539,7 @@ class _UserInfoDataState extends State<UserInfoData> {
               ),
               Container(
                 height: 130.h,
-                width: Get.width - 100.w,
+                width: Get.width - (isFolded ? 55.w : 100.w),
                 decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(5)), border: Border.all(color: Colors.grey)),
                 child: Center(
                   child: DropdownButton<String>(
@@ -554,7 +572,7 @@ class _UserInfoDataState extends State<UserInfoData> {
                             content: SizedBox(
                               height: 300.0,
                               width: 300.0,
-                              child: Column(
+                              child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
                                   TextField(

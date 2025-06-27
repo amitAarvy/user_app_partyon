@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -38,11 +40,27 @@ class ClubDetails extends StatefulWidget {
 
 class _ClubDetailsState extends State<ClubDetails> {
   int index = 0;
+  bool isFolded = false;
   bool isPastEvent = true, isUpcomingEvent = true, isTodayEvent = true;
   final List<String> galleryImages = [];
   List<DocumentSnapshot> pastEventList = [], todayEventsList = [], upcomingEventsList = [];
   final List<String> menuImages = [];
   final IndexProvider indexProvider = Get.put(IndexProvider());
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Detect fold (hinge) using displayFeatures
+    final displayFeatures = MediaQuery.of(context).displayFeatures;
+
+    // Hinge is considered if there's a display feature of type 'hinge'
+    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
+
+    setState(() {
+      isFolded = isFoldedPhone;
+    });
+  }
 
   Widget aboutMenu() => Container(
         height: 120.h,
@@ -62,7 +80,7 @@ class _ClubDetailsState extends State<ClubDetails> {
                   style: GoogleFonts.montserrat(
                     color: indexProvider.index.value == 0 ? Colors.white : Colors.white70,
                     fontWeight: FontWeight.bold,
-                    fontSize: 45.sp,
+                    fontSize: isFolded ? 24.sp : 45.sp,
                   ),
                 ),
               ),
@@ -81,7 +99,7 @@ class _ClubDetailsState extends State<ClubDetails> {
                   style: GoogleFonts.montserrat(
                     color: indexProvider.index.value == 1 ? Colors.white : Colors.white70,
                     fontWeight: FontWeight.bold,
-                    fontSize: 45.sp,
+                    fontSize: isFolded ? 24.sp : 45.sp,
                   ),
                 ),
               ),
@@ -109,7 +127,7 @@ class _ClubDetailsState extends State<ClubDetails> {
                 style: GoogleFonts.montserrat(
                   color: Colors.white70,
                   fontWeight: FontWeight.bold,
-                  fontSize: 45.sp,
+                  fontSize: isFolded ? 24.sp : 45.sp,
                 ),
               ),
             ),
@@ -222,7 +240,7 @@ class _ClubDetailsState extends State<ClubDetails> {
                 width: 50.w,
               ),
               SizedBox(
-                width: Get.width - 400.h,
+                width: Get.width - 480.h,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -247,7 +265,7 @@ class _ClubDetailsState extends State<ClubDetails> {
                 ),
               )
             ],
-          ).marginOnly(left: 40.w),
+          ).marginOnly(left: 20.w),
         ),
       ).marginOnly(
         left: 20.w,
@@ -295,8 +313,8 @@ class _ClubDetailsState extends State<ClubDetails> {
     } else {
       return Text(
         'No Events Found',
-        style: GoogleFonts.ubuntu(color: Colors.white, fontSize: 50.sp, fontWeight: FontWeight.bold),
-      ).paddingSymmetric(vertical: 30.h);
+        style: GoogleFonts.ubuntu(color: Colors.white, fontSize: isFolded ? 24.sp : 50.sp, fontWeight: FontWeight.bold),
+      ).paddingSymmetric(vertical: isFolded ? 20.h : 30.h);
     }
   }
 
@@ -315,12 +333,12 @@ class _ClubDetailsState extends State<ClubDetails> {
               style: GoogleFonts.ubuntu(
                 color: Colors.orange,
                 fontWeight: FontWeight.bold,
-                fontSize: 47.sp,
+                fontSize: isFolded ? 24.sp : 47.sp,
               ),
             ),
           ),
         ],
-      ).paddingSymmetric(vertical: 40.h, horizontal: 24.w);
+      ).paddingSymmetric(horizontal: 24.w);
 
   @override
   void dispose() {
@@ -393,7 +411,7 @@ class _ClubDetailsState extends State<ClubDetails> {
   @override
   Widget build(BuildContext context) => Scaffold(
       backgroundColor: matte(),
-      appBar: eventAppBar(widget.clubName),
+      appBar: eventAppBar(widget.clubName, isFolded),
       body: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Obx(
@@ -428,7 +446,7 @@ class _ClubDetailsState extends State<ClubDetails> {
                                   'Something went wrong',
                                   style: GoogleFonts.ubuntu(
                                     color: Colors.white,
-                                    fontSize: 60.sp,
+                                    fontSize: isFolded ? 24.sp : 60.sp,
                                   ),
                                 ),
                               ),
@@ -472,26 +490,10 @@ class _ClubDetailsState extends State<ClubDetails> {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      aboutDetails(
-                                        'assets/location.png',
-                                        'Location',
-                                        location,
-                                      ),
-                                      aboutDetails(
-                                        'assets/open.png',
-                                        'Opening Timing',
-                                        openTime,
-                                      ),
-                                      aboutDetails(
-                                        'assets/close.png',
-                                        'Closing Timing',
-                                        closeTime,
-                                      ),
-                                      aboutDetails(
-                                        'assets/cost.png',
-                                        'Average Cost',
-                                        avgCost,
-                                      ),
+                                      aboutDetails('assets/location.png', 'Location', location, isFolded),
+                                      aboutDetails('assets/open.png', 'Opening Timing', openTime, isFolded),
+                                      aboutDetails('assets/close.png', 'Closing Timing', closeTime, isFolded),
+                                      aboutDetails('assets/cost.png', 'Average Cost', avgCost, isFolded),
                                       GestureDetector(
                                         onTap: () {
                                           menuImages.isNotEmpty == true
@@ -545,11 +547,7 @@ class _ClubDetailsState extends State<ClubDetails> {
                                                   msg: 'No Menu added',
                                                 );
                                         },
-                                        child: aboutDetails(
-                                          'assets/menu.png',
-                                          'Menu',
-                                          'Click here to view',
-                                        ),
+                                        child: aboutDetails('assets/menu.png', 'Menu', 'Click here to view', isFolded),
                                       ),
                                     ],
                                   ),
@@ -619,7 +617,7 @@ class _ClubDetailsState extends State<ClubDetails> {
                       widget.description,
                       style: GoogleFonts.ubuntu(
                         color: Colors.white,
-                        fontSize: 45.sp,
+                        fontSize: isFolded ? 24.sp : 45.sp,
                       ),
                     ).marginAll(30.w),
                     eventListHeading('Past Events', isPast: true),

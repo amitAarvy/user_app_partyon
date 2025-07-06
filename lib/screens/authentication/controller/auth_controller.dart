@@ -9,6 +9,8 @@ import 'package:user/screens/home/view/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:user/screens/events/book_events.dart';
+
+
 class AuthController {
   static Future loginPin(String pin, BuildContext context) {
     //text controller for login pin

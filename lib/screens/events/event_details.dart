@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,28 +11,35 @@ import 'package:user/utils/terms_n_conditions.dart';
 import 'package:user/utils/utils.dart';
 
 class EventDetails extends StatefulWidget {
-  final String tag, title, location, genre, artistName, eventID, aboutEvent, clubUID;
+  final String tag,
+      title,
+      location,
+      genre,
+      artistName,
+      eventID,
+      aboutEvent,
+      clubUID;
   final DateTime startTime, endTime;
   final bool isPast;
   final DateTime date;
   final List coverLink;
 
   const EventDetails(
-    this.coverLink,
-    this.tag,
-    this.title,
-    this.date,
-    this.location,
-    this.genre,
-    this.artistName, {
-    required this.clubUID,
-    required this.eventID,
-    required this.startTime,
-    required this.endTime,
-    required this.aboutEvent,
-    this.isPast = false,
-    super.key,
-  });
+      this.coverLink,
+      this.tag,
+      this.title,
+      this.date,
+      this.location,
+      this.genre,
+      this.artistName, {
+        required this.clubUID,
+        required this.eventID,
+        required this.startTime,
+        required this.endTime,
+        required this.aboutEvent,
+        this.isPast = false,
+        super.key,
+      });
 
   @override
   State<EventDetails> createState() => _EventDetailsState();
@@ -42,18 +47,17 @@ class EventDetails extends StatefulWidget {
 
 class _EventDetailsState extends State<EventDetails> {
   bool isTnC = false;
-  bool isFolded = false;
 
   Widget eventBox(
-    String img,
-    String title,
-    String content, {
-    bool isIconImg = false,
-    bool isAboutEvent = false,
-    bool isDateCalender = false,
-    DateTime? startTime,
-    DateTime? endTime,
-  }) =>
+      String img,
+      String title,
+      String content, {
+        bool isIconImg = false,
+        bool isAboutEvent = false,
+        bool isDateCalender = false,
+        DateTime? startTime,
+        DateTime? endTime,
+      }) =>
       GestureDetector(
           onTap: () {
             if (isAboutEvent) {
@@ -82,89 +86,74 @@ class _EventDetailsState extends State<EventDetails> {
             ),
             child: isDateCalender == true
                 ? Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '$title : $content',
-                            style: GoogleFonts.montserrat(
-                              color: Colors.white70,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ).marginAll(10.w),
-                          if (startTime != null)
-                            Text(
-                              'Start Time: ${DateFormat('hh : mm a').format(startTime)}',
-                              style: GoogleFonts.ubuntu(color: Colors.white),
-                            ),
-                          SizedBox(
-                            height: 20.h,
-                          ),
-                          if (endTime != null)
-                            Text(
-                              'Upto: ${DateFormat('hh : mm a').format(endTime)}',
-                              style: GoogleFonts.ubuntu(color: Colors.white),
-                            )
-                        ],
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '$title : $content',
+                      style: GoogleFonts.montserrat(
+                        color: Colors.white70,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  )
+                    ).marginAll(10.w),
+                    if (startTime != null)
+                      Text(
+                        'Start Time: ${DateFormat('hh : mm a').format(startTime)}',
+                        style: GoogleFonts.ubuntu(color: Colors.white),
+                      ),
+                    SizedBox(
+                      height: 20.h,
+                    ),
+                    if (endTime != null)
+                      Text(
+                        'Upto: ${DateFormat('hh : mm a').format(endTime)}',
+                        style: GoogleFonts.ubuntu(color: Colors.white),
+                      )
+                  ],
+                ),
+              ],
+            )
                 : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        height: 100.h,
-                        width: 100.h,
-                        child: isIconImg
-                            ? Icon(
-                                Icons.info_outline,
-                                color: Colors.white,
-                                size: 90.h,
-                              )
-                            : Image.asset(
-                                img,
-                                fit: BoxFit.contain,
-                              ),
-                      ),
-                      Text(
-                        title,
-                        style: GoogleFonts.montserrat(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ).marginAll(10.w),
-                      Text(
-                        content,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.ubuntu(
-                          color: Colors.white70,
-                        ),
-                      ).marginAll(10.w),
-                    ],
-                  ).paddingSymmetric(horizontal: 30.w),
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 100.h,
+                  width: 100.h,
+                  child: isIconImg
+                      ? Icon(
+                    Icons.info_outline,
+                    color: Colors.white,
+                    size: 90.h,
+                  )
+                      : Image.asset(
+                    img,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                Text(
+                  title,
+                  style: GoogleFonts.montserrat(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ).marginAll(10.w),
+                Text(
+                  content,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.ubuntu(
+                    color: Colors.white70,
+                  ),
+                ).marginAll(10.w),
+              ],
+            ).paddingSymmetric(horizontal: 30.w),
           )).marginOnly(top: 30.h, bottom: 30.h);
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Detect fold (hinge) using displayFeatures
-    final displayFeatures = MediaQuery.of(context).displayFeatures;
-
-    // Hinge is considered if there's a display feature of type 'hinge'
-    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
-
-    setState(() {
-      isFolded = isFoldedPhone;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: eventAppBar('Event Details', isFolded),
+      appBar: eventAppBar('Event Details'),
       backgroundColor: matte(),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -176,14 +165,15 @@ class _EventDetailsState extends State<EventDetails> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text("${TimeOfDay(hour: widget.startTime.hour, minute: widget.startTime.minute).hourOfPeriod.toString()}:${TimeOfDay(hour: widget.startTime.hour, minute: widget.startTime.minute).minute.toString().padLeft(2, '0')} ${TimeOfDay(hour: widget.startTime.hour, minute: widget.startTime.minute).period.name} Onwards",
-                      style: GoogleFonts.adamina(fontSize: 15, color: Colors.white)),
+                  Text("${TimeOfDay(hour: widget.startTime.hour, minute: widget.startTime.minute).hourOfPeriod.toString()}:${TimeOfDay(hour: widget.startTime.hour, minute: widget.startTime.minute).minute.toString().padLeft(2, '0')} ${TimeOfDay(hour: widget.startTime.hour, minute: widget.startTime.minute).period.name} Onwards", style: GoogleFonts.adamina(fontSize: 15, color: Colors.white)),
                   const SizedBox(height: 5),
                   Text(DateFormat.yMMMd().format(widget.date), style: GoogleFonts.adamina(fontSize: 15, color: Colors.white)),
                   const SizedBox(height: 15),
                   Container(
                     padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: Colors.black),
+                    decoration: BoxDecoration(
+                        color: Colors.black
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -195,8 +185,7 @@ class _EventDetailsState extends State<EventDetails> {
                         const SizedBox(height: 15),
                         Text("Date: ${DateFormat.yMMMMEEEEd().format(widget.date)}", style: GoogleFonts.adamina(fontSize: 15, color: Colors.white)),
                         const SizedBox(height: 15),
-                        Text("Time: ${TimeOfDay(hour: widget.startTime.hour, minute: widget.startTime.minute).hourOfPeriod.toString()}:${TimeOfDay(hour: widget.startTime.hour, minute: widget.startTime.minute).minute.toString().padLeft(2, '0')} ${TimeOfDay(hour: widget.startTime.hour, minute: widget.startTime.minute).period.name} Onwards",
-                            style: GoogleFonts.adamina(fontSize: 15, color: Colors.white)),
+                        Text("Time: ${TimeOfDay(hour: widget.startTime.hour, minute: widget.startTime.minute).hourOfPeriod.toString()}:${TimeOfDay(hour: widget.startTime.hour, minute: widget.startTime.minute).minute.toString().padLeft(2, '0')} ${TimeOfDay(hour: widget.startTime.hour, minute: widget.startTime.minute).period.name} Onwards", style: GoogleFonts.adamina(fontSize: 15, color: Colors.white)),
                         const SizedBox(height: 15),
                         Text("Duration: ${widget.endTime.difference(widget.startTime).inHours} hours", style: GoogleFonts.adamina(fontSize: 15, color: Colors.white)),
                         const SizedBox(height: 15),
@@ -277,7 +266,7 @@ class _EventDetailsState extends State<EventDetails> {
               children: [
                 Checkbox(
                   fillColor: MaterialStateProperty.resolveWith(
-                    (states) => Colors.orange,
+                        (states) => Colors.orange,
                   ),
                   value: isTnC,
                   onChanged: (val) {
@@ -360,7 +349,7 @@ class _EventDetailsState extends State<EventDetails> {
                 },
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.resolveWith(
-                    (states) => themeRed(),
+                        (states) => themeRed(),
                   ),
                 ),
                 child: const Text('Book Event'),

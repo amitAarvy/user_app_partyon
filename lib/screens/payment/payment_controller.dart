@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dart_ipify/dart_ipify.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -90,258 +91,270 @@ Future<void> paymentSuccess(
       'promoterID': promoterID,
       'organiserID': organiserID,
       'entryList':entryList,
-      'tableList': tableList
+      'tableList': tableList,
+      'type':couponDetail ==null?null: couponDetail['appliedCoupon'].toString()
     })
         .whenComplete(() async{
+      print('yes it is check  ${promoterID}');
+      if(promoterID != '') {
+        if (couponDetail != null) {
+          var userInfo = await FirebaseFirestore.instance
+              .collection('User')
+              .doc(uid())
+              .get();
+          final Timestamp dobTimestamp = userInfo['dob']; // dob is a Firestore Timestamp
+          DateTime dob = dobTimestamp.toDate();
+          int age = calculateAge(dob);
+          print('yes it is check  ${age}');
+          // if(couponDetail['appliedCoupon'].toString() != 'pr'){
+          Map<String, dynamic>? info = userInfo.data();
           print('yes it is check  ${promoterID}');
-          if(promoterID != '') {
-            if (couponDetail != null) {
-              var userInfo = await FirebaseFirestore.instance
-                  .collection('User')
-                  .doc(uid())
-                  .get();
-              final Timestamp dobTimestamp = userInfo['dob']; // dob is a Firestore Timestamp
-              DateTime dob = dobTimestamp.toDate();
-              int age = calculateAge(dob);
-              print('yes it is check  ${age}');
-              // if(couponDetail['appliedCoupon'].toString() != 'pr'){
-              Map<String, dynamic>? info = userInfo.data();
-              print('yes it is check  ${promoterID}');
-              couponDetail.addAll({
-                'userId': uid(),
-                "name": info!['userName'].toString(),
-                "mobile_no": phoneNumber(),
-                "gender": info['gender'].toString(),
-                "age": age,
-                'creditAt': DateTime.now(),
-              });
-              print('check coupon detail is ${couponDetail}');
-              List couponDetails = [];
-              couponDetails.add(couponDetail);
-              var data = await FirebaseFirestore.instance.collection(
-                  'AppliedCoupon').get();
-              print('yes check updated data is ${promoterID} ');
-              if (promoterID != null) {
-                print('yes check updated data is ');
-                var snapshot = await FirebaseFirestore.instance
-                    .collection('PrAnalytics')
-                    .get();
+          couponDetail.addAll({
+            'userId': uid(),
+            "name": info!['userName'].toString(),
+            "mobile_no": phoneNumber(),
+            "gender": info['gender'].toString(),
+            "age": age,
+            'creditAt': DateTime.now(),
+          });
+          print('check coupon detail is ${couponDetail}');
+          List couponDetails = [];
+          couponDetails.add(couponDetail);
+          var data = await FirebaseFirestore.instance.collection(
+              'AppliedCoupon').get();
+          print('yes check updated data is ${promoterID} ');
+          if (promoterID != null) {
+            print('yes check updated data is ');
 
-                List<DocumentSnapshot> matchingDocs = snapshot.docs.where((
-                    doc) {
-                  final data = doc.data() as Map<String, dynamic>;
-                  return data['prId'].toString() == promoterID.toString() &&
-                      data['eventId'].toString() == eventID.toString();
-                }).toList();
 
-                if (matchingDocs.isEmpty) {
-                  print("No document found matching promoterID and eventID");
-                  return;
-                }
-
-                final docToUpdate = matchingDocs.first;
-                final data = docToUpdate.data() as Map<String, dynamic>;
-
-                await FirebaseFirestore.instance
-                    .collection('PrAnalytics')
-                    .doc(docToUpdate.id)
-                    .update({
-                  "noOfReserved": (data['noOfReserved'] ?? 0) + 1,
-                  'userList': FieldValue.arrayUnion([
-                    {
-                      "bookingId": bookingID,
-                      'userId': uid(),
-                      "name": info['userName'].toString(),
-                      "mobile_no": phoneNumber(),
-                      "gender": info['gender'].toString(),
-                      "age": age,
-                      'creditAt': DateTime.now(),
-                      'noShow': true,
-                      'duration': "",
-                      "checkIn": "",
-                      "checkOut": "",
-                      "type": couponDetail['type'].toString(),
-                      'price': amount,
-                      'couponDetail': couponDetail,
-                    }
-                  ])
-                });
-              }
-              print('event id check it jds ${data}');
-              List appliedCoupon = data.docs.where((element) =>
-              element.id == eventID).toList();
-              if (appliedCoupon.isEmpty) {
-                await FirebaseFirestore.instance
-                    .collection('AppliedCoupon')
-                    .doc(eventID)
-                    .set({'coupons': FieldValue.arrayUnion(couponDetails),});
-              } else {
-                await FirebaseFirestore.instance
-                    .collection('AppliedCoupon')
-                    .doc(eventID)
-                    .update({'coupons': FieldValue.arrayUnion(couponDetails),});
-              }
-              // List alreadyData = data.docs.where((element) => element['eventId'].toString() ==eventID.toString()).toList();
-
-              // if(alreadyData.isEmpty){
-              //   couponDetail.addAll({
-              //     "totalUseCouponEntry":couponDetail['type'].toString() =='entry'?1:0,
-              //     "totalUseCouponTable":couponDetail['type'].toString() !='entry'?1:0
-              //   });
-              //   await FirebaseFirestore.instance
-              //       .collection('CouponVenue')
-              //       .add(couponDetail);
-              // }else{
-              //   if(couponDetail['type'].toString() == 'entry'){
-              //
-              //   couponDetail['totalUseCouponEntry'] =
-              //       int.parse(alreadyData[0]['totalUseCouponEntry'].toString()) + 1;
-              //   }else{
-              //     couponDetail['totalUseCouponTable'] =
-              //         int.parse(alreadyData[0]['totalUseCouponTable'].toString()) + 1;
-              //   }
-
-              // }
-              // }else{
-              // Map<String, dynamic> updateData = {};
-              // if (couponDetail['type'].toString() == 'table') {
-              //   updateData['totalUseCouponTable'] =
-              //       int.parse(couponDetail['totalView'].toString()) + 1;
-              // } else {
-              //   updateData['totalUseCoupon'] =
-              //       int.parse(couponDetail['totalView'].toString()) + 1;
-              // }
-              // await FirebaseFirestore.instance
-              //     .collection('CouponPR')
-              //     .doc(couponDetail['id'].toString())
-              //     .update(updateData);
-              // }
+            if(couponDetail['appliedCoupon'].toString() == 'filler'){
+              await FirebaseFirestore.instance
+                  .collection('FillerEventBooking')
+                  .doc(eventID)
+                  .set({
+                'dataList': FieldValue.arrayUnion([couponDetail])
+              }, SetOptions(merge: true));
             }
-          }else{
-            print('check it');
-            if (couponDetail != null) {
-              var userInfo = await FirebaseFirestore.instance
-                  .collection('User')
-                  .doc(uid())
-                  .get();
-              final Timestamp dobTimestamp = userInfo['dob']; // dob is a Firestore Timestamp
-              DateTime dob = dobTimestamp.toDate();
-              int age = calculateAge(dob);
-              print('yes it is check  ${age}');
-              // if(couponDetail['appliedCoupon'].toString() != 'pr'){
-              Map<String, dynamic>? info = userInfo.data();
-              print('yes it is check  ${promoterID}');
-              couponDetail.addAll({
-                'userId': uid(),
-                "name": info!['userName'].toString(),
-                "mobile_no": phoneNumber(),
-                "gender": info['gender'].toString(),
-                "age": age,
-                'creditAt': DateTime.now(),
-              });
-              print('check coupon detail is ${couponDetail}');
-              List couponDetails = [];
-              couponDetails.add(couponDetail);
-              var data = await FirebaseFirestore.instance.collection(
-                  'AppliedCoupon').get();
-              // if (promoterID != null) {
-                print('yes check updated data is ');
-                var snapshot = await FirebaseFirestore.instance
-                    .collection('VenueAnalysis')
-                    .get();
+            var snapshot = await FirebaseFirestore.instance
+                .collection('PrAnalytics')
+                .get();
 
-                List<DocumentSnapshot> matchingDocs = snapshot.docs.where((
-                    doc) {
-                  final data1 = doc.data() as Map<String, dynamic>;
-                  return data1['isVenue'].toString() == 'true' &&
-                      data1['eventId'].toString() == eventID.toString();
-                }).toList();
+            List<DocumentSnapshot> matchingDocs = snapshot.docs.where((
+                doc) {
+              final data = doc.data() as Map<String, dynamic>;
+              return data['prId'].toString() == promoterID.toString() &&
+                  data['eventId'].toString() == eventID.toString();
+            }).toList();
 
-                if (matchingDocs.isEmpty) {
-                  print("No document found matching promoterID and eventID");
-                  return;
-                }
-                print('cehck is data1 $data');
-                final docToUpdate = matchingDocs.first;
-                final data1 = docToUpdate.data() as Map<String, dynamic>;
-              print('cehck is data1$data1');
-                await FirebaseFirestore.instance
-                    .collection('VenueAnalysis')
-                    .doc(docToUpdate.id)
-                    .update({
-                  "noOfReserved": (data1['noOfReserved'] ?? 0) + 1,
-                  'userList': FieldValue.arrayUnion([
-                    {
-                      "bookingId": bookingID,
-                      'userId': uid(),
-                      "name": info['userName'].toString(),
-                      "mobile_no": phoneNumber(),
-                      "gender": info['gender'].toString(),
-                      "age": age,
-                      'creditAt': DateTime.now(),
-                      'noShow': true,
-                      'duration': "",
-                      "checkIn": "",
-                      "checkOut": "",
-                      "type": couponDetail['type'].toString(),
-                      'price': amount,
-                    }
-                  ])
-                }).catchError((e){
-                  print('check error is response ${e}');
-                });
-
-              print('event id check it jds ${data}');
-              List appliedCoupon = data.docs.where((element) =>
-              element.id == eventID).toList();
-              if (appliedCoupon.isEmpty) {
-                await FirebaseFirestore.instance
-                    .collection('AppliedCoupon')
-                    .doc(eventID)
-                    .set({'coupons': FieldValue.arrayUnion(couponDetails),});
-              } else {
-                await FirebaseFirestore.instance
-                    .collection('AppliedCoupon')
-                    .doc(eventID)
-                    .update({'coupons': FieldValue.arrayUnion(couponDetails),});
-              }
-              // List alreadyData = data.docs.where((element) => element['eventId'].toString() ==eventID.toString()).toList();
-
-              // if(alreadyData.isEmpty){
-              //   couponDetail.addAll({
-              //     "totalUseCouponEntry":couponDetail['type'].toString() =='entry'?1:0,
-              //     "totalUseCouponTable":couponDetail['type'].toString() !='entry'?1:0
-              //   });
-              //   await FirebaseFirestore.instance
-              //       .collection('CouponVenue')
-              //       .add(couponDetail);
-              // }else{
-              //   if(couponDetail['type'].toString() == 'entry'){
-              //
-              //   couponDetail['totalUseCouponEntry'] =
-              //       int.parse(alreadyData[0]['totalUseCouponEntry'].toString()) + 1;
-              //   }else{
-              //     couponDetail['totalUseCouponTable'] =
-              //         int.parse(alreadyData[0]['totalUseCouponTable'].toString()) + 1;
-              //   }
-
-              // }
-              // }else{
-              // Map<String, dynamic> updateData = {};
-              // if (couponDetail['type'].toString() == 'table') {
-              //   updateData['totalUseCouponTable'] =
-              //       int.parse(couponDetail['totalView'].toString()) + 1;
-              // } else {
-              //   updateData['totalUseCoupon'] =
-              //       int.parse(couponDetail['totalView'].toString()) + 1;
-              // }
-              // await FirebaseFirestore.instance
-              //     .collection('CouponPR')
-              //     .doc(couponDetail['id'].toString())
-              //     .update(updateData);
-              // }
+            if (matchingDocs.isEmpty) {
+              print("No document found matching promoterID and eventID");
+              return;
             }
+
+            final docToUpdate = matchingDocs.first;
+            final data = docToUpdate.data() as Map<String, dynamic>;
+
+
+            await FirebaseFirestore.instance
+                .collection('PrAnalytics')
+                .doc(docToUpdate.id)
+                .update({
+              "noOfReserved": (data['noOfReserved'] ?? 0) + 1,
+              'userList': FieldValue.arrayUnion([
+                {
+                  "bookingId": bookingID,
+                  'userId': uid(),
+                  "name": info['userName'].toString(),
+                  "mobile_no": phoneNumber(),
+                  "gender": info['gender'].toString(),
+                  "age": age,
+                  'creditAt': DateTime.now(),
+                  'noShow': true,
+                  'duration': "",
+                  "checkIn": "",
+                  "checkOut": "",
+                  "type": couponDetail['type'].toString(),
+                  'price': amount,
+                  'couponDetail': couponDetail,
+                }
+              ])
+            });
           }
+          print('event id check it jds ${data}');
+          List appliedCoupon = data.docs.where((element) =>
+          element.id == eventID).toList();
+          if (appliedCoupon.isEmpty) {
+            await FirebaseFirestore.instance
+                .collection('AppliedCoupon')
+                .doc(eventID)
+                .set({'coupons': FieldValue.arrayUnion(couponDetails),});
+          } else {
+            await FirebaseFirestore.instance
+                .collection('AppliedCoupon')
+                .doc(eventID)
+                .update({'coupons': FieldValue.arrayUnion(couponDetails),});
+          }
+          // List alreadyData = data.docs.where((element) => element['eventId'].toString() ==eventID.toString()).toList();
+
+          // if(alreadyData.isEmpty){
+          //   couponDetail.addAll({
+          //     "totalUseCouponEntry":couponDetail['type'].toString() =='entry'?1:0,
+          //     "totalUseCouponTable":couponDetail['type'].toString() !='entry'?1:0
+          //   });
+          //   await FirebaseFirestore.instance
+          //       .collection('CouponVenue')
+          //       .add(couponDetail);
+          // }else{
+          //   if(couponDetail['type'].toString() == 'entry'){
+          //
+          //   couponDetail['totalUseCouponEntry'] =
+          //       int.parse(alreadyData[0]['totalUseCouponEntry'].toString()) + 1;
+          //   }else{
+          //     couponDetail['totalUseCouponTable'] =
+          //         int.parse(alreadyData[0]['totalUseCouponTable'].toString()) + 1;
+          //   }
+
+          // }
+          // }else{
+          // Map<String, dynamic> updateData = {};
+          // if (couponDetail['type'].toString() == 'table') {
+          //   updateData['totalUseCouponTable'] =
+          //       int.parse(couponDetail['totalView'].toString()) + 1;
+          // } else {
+          //   updateData['totalUseCoupon'] =
+          //       int.parse(couponDetail['totalView'].toString()) + 1;
+          // }
+          // await FirebaseFirestore.instance
+          //     .collection('CouponPR')
+          //     .doc(couponDetail['id'].toString())
+          //     .update(updateData);
+          // }
+        }
+      }else{
+        print('check it');
+        if (couponDetail != null) {
+          var userInfo = await FirebaseFirestore.instance
+              .collection('User')
+              .doc(uid())
+              .get();
+          final Timestamp dobTimestamp = userInfo['dob']; // dob is a Firestore Timestamp
+          DateTime dob = dobTimestamp.toDate();
+          int age = calculateAge(dob);
+          print('yes it is check  ${age}');
+          // if(couponDetail['appliedCoupon'].toString() != 'pr'){
+          Map<String, dynamic>? info = userInfo.data();
+          print('yes it is check  ${promoterID}');
+          couponDetail.addAll({
+            'userId': uid(),
+            "name": info!['userName'].toString(),
+            "mobile_no": phoneNumber(),
+            "gender": info['gender'].toString(),
+            "age": age,
+            'creditAt': DateTime.now(),
+          });
+          print('check coupon detail is ${couponDetail}');
+          List couponDetails = [];
+          couponDetails.add(couponDetail);
+          var data = await FirebaseFirestore.instance.collection(
+              'AppliedCoupon').get();
+          // if (promoterID != null) {
+          print('yes check updated data is ');
+          var snapshot = await FirebaseFirestore.instance
+              .collection('VenueAnalysis')
+              .get();
+
+          List<DocumentSnapshot> matchingDocs = snapshot.docs.where((
+              doc) {
+            final data1 = doc.data() as Map<String, dynamic>;
+            return data1['isVenue'].toString() == 'true' &&
+                data1['eventId'].toString() == eventID.toString();
+          }).toList();
+
+          if (matchingDocs.isEmpty) {
+            print("No document found matching promoterID and eventID");
+            return;
+          }
+          print('cehck is data1 $data');
+          final docToUpdate = matchingDocs.first;
+          final data1 = docToUpdate.data() as Map<String, dynamic>;
+          print('cehck is data1$data1');
+          await FirebaseFirestore.instance
+              .collection('VenueAnalysis')
+              .doc(docToUpdate.id)
+              .update({
+            "noOfReserved": (data1['noOfReserved'] ?? 0) + 1,
+            'userList': FieldValue.arrayUnion([
+              {
+                "bookingId": bookingID,
+                'userId': uid(),
+                "name": info['userName'].toString(),
+                "mobile_no": phoneNumber(),
+                "gender": info['gender'].toString(),
+                "age": age,
+                'creditAt': DateTime.now(),
+                'noShow': true,
+                'duration': "",
+                "checkIn": "",
+                "checkOut": "",
+                "type": couponDetail['type'].toString(),
+                'price': amount,
+              }
+            ])
+          }).catchError((e){
+            print('check error is response ${e}');
+          });
+
+          print('event id check it jds ${data}');
+          List appliedCoupon = data.docs.where((element) =>
+          element.id == eventID).toList();
+          if (appliedCoupon.isEmpty) {
+            await FirebaseFirestore.instance
+                .collection('AppliedCoupon')
+                .doc(eventID)
+                .set({'coupons': FieldValue.arrayUnion(couponDetails),});
+          } else {
+            await FirebaseFirestore.instance
+                .collection('AppliedCoupon')
+                .doc(eventID)
+                .update({'coupons': FieldValue.arrayUnion(couponDetails),});
+          }
+          // List alreadyData = data.docs.where((element) => element['eventId'].toString() ==eventID.toString()).toList();
+
+          // if(alreadyData.isEmpty){
+          //   couponDetail.addAll({
+          //     "totalUseCouponEntry":couponDetail['type'].toString() =='entry'?1:0,
+          //     "totalUseCouponTable":couponDetail['type'].toString() !='entry'?1:0
+          //   });
+          //   await FirebaseFirestore.instance
+          //       .collection('CouponVenue')
+          //       .add(couponDetail);
+          // }else{
+          //   if(couponDetail['type'].toString() == 'entry'){
+          //
+          //   couponDetail['totalUseCouponEntry'] =
+          //       int.parse(alreadyData[0]['totalUseCouponEntry'].toString()) + 1;
+          //   }else{
+          //     couponDetail['totalUseCouponTable'] =
+          //         int.parse(alreadyData[0]['totalUseCouponTable'].toString()) + 1;
+          //   }
+
+          // }
+          // }else{
+          // Map<String, dynamic> updateData = {};
+          // if (couponDetail['type'].toString() == 'table') {
+          //   updateData['totalUseCouponTable'] =
+          //       int.parse(couponDetail['totalView'].toString()) + 1;
+          // } else {
+          //   updateData['totalUseCoupon'] =
+          //       int.parse(couponDetail['totalView'].toString()) + 1;
+          // }
+          // await FirebaseFirestore.instance
+          //     .collection('CouponPR')
+          //     .doc(couponDetail['id'].toString())
+          //     .update(updateData);
+          // }
+        }
+      }
       //     DocumentSnapshot eve = await FirebaseFirestore.instance.collection('Events').doc(eventID).get();
       // List entList = (eve.data() as Map<String, dynamic>)['entranceList'];
       // print('entrance list is ${entList}');
@@ -370,20 +383,20 @@ Future<void> paymentSuccess(
       //       .then((_) => print("Firestore update successful"))
       //       .catchError((error) => print("Firestore update failed: $error"));
 
-        // for (int i = 0; i < entryList.length; i++) {
-        //   if (i < entList[0]['subCategory'].length) { // Prevent out-of-range error
-        //     entList[0]['subCategory'][i]['entryCategoryCountLeft'] =
-        //         (entList[0]['subCategory'][i]['entryCategoryCountLeft'] ?? 0) -
-        //             (entryList[i]['bookingCount'] ?? 0);
-        //   }
-        //   print('entry list is ${entList}');
-        // }
-        // FirebaseFirestore.instance
-        //     .collection('Events')
-        //     .doc(eventID)
-        //     .set({
-        //   "entranceList": entList,
-        // }, SetOptions(merge: true));
+      // for (int i = 0; i < entryList.length; i++) {
+      //   if (i < entList[0]['subCategory'].length) { // Prevent out-of-range error
+      //     entList[0]['subCategory'][i]['entryCategoryCountLeft'] =
+      //         (entList[0]['subCategory'][i]['entryCategoryCountLeft'] ?? 0) -
+      //             (entryList[i]['bookingCount'] ?? 0);
+      //   }
+      //   print('entry list is ${entList}');
+      // }
+      // FirebaseFirestore.instance
+      //     .collection('Events')
+      //     .doc(eventID)
+      //     .set({
+      //   "entranceList": entList,
+      // }, SetOptions(merge: true));
       // }
       // FirebaseDatabase.instance
       //     .ref('Bookings')
@@ -435,30 +448,30 @@ Future<void> paymentSuccess(
         .whenComplete(() => updateEachEntryLeftEvent(context, eventID))
         .whenComplete(() async {
 
-     // await FirebaseFirestore.instance
-     //      .collection('Events')
-     //      .doc(eventID)
-     //      .collection('Tables').get();
-     // print('check t;oe left ${tableList}');
-     //  for (int i = 0; i < tableList.length; i++) {
-     //    print('check table left ${ tableList[i]['tableLeft']}');
-     //    print('check t;oe left ${ tableList[i]['tableLeft']}');
-     //    // if (tableDataList[i]['tableName'] != '' && tableDataList[i] != '') {
-     //   if(tableList[i]['tableName'] !='') {
-     //
-     //     FirebaseFirestore.instance
-     //         .collection('Events')
-     //         .doc(eventID)
-     //         .collection('Tables')
-     //         .doc('table${i + 1}')
-     //         .set(
-     //       {
-     //         'tableLeft': tableList[i]['tableLeft']
-     //       },
-     //       SetOptions(merge: true),
-     //     );
-     //   }
-     //    }
+      // await FirebaseFirestore.instance
+      //      .collection('Events')
+      //      .doc(eventID)
+      //      .collection('Tables').get();
+      // print('check t;oe left ${tableList}');
+      //  for (int i = 0; i < tableList.length; i++) {
+      //    print('check table left ${ tableList[i]['tableLeft']}');
+      //    print('check t;oe left ${ tableList[i]['tableLeft']}');
+      //    // if (tableDataList[i]['tableName'] != '' && tableDataList[i] != '') {
+      //   if(tableList[i]['tableName'] !='') {
+      //
+      //     FirebaseFirestore.instance
+      //         .collection('Events')
+      //         .doc(eventID)
+      //         .collection('Tables')
+      //         .doc('table${i + 1}')
+      //         .set(
+      //       {
+      //         'tableLeft': tableList[i]['tableLeft']
+      //       },
+      //       SetOptions(merge: true),
+      //     );
+      //   }
+      //    }
       // }
       Fluttertoast.showToast(
         msg: 'Payment Successful',

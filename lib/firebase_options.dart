@@ -18,10 +18,10 @@ class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
       return web;
-      // throw UnsupportedError(
-      //   'DefaultFirebaseOptions have not been configured for web - '
-      //   'you can reconfigure this by running the FlutterFire CLI again.',
-      // );
+      throw UnsupportedError(
+        'DefaultFirebaseOptions have not been configured for web - '
+        'you can reconfigure this by running the FlutterFire CLI again.',
+      );
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -78,13 +78,14 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions web = FirebaseOptions(
-    // apiKey: "AIzaSyCRNAx5nOIj8Z9AKfm_Pn7lxje1kRSk4OA",
-    // authDomain: "partyon-user.firebaseapp.com",
-    // projectId: "partyon-user",
-    // storageBucket: "partyon-user.firebasestorage.app",
-    // messagingSenderId: "593508339629",
-    // appId: "1:593508339629:web:90c02b29062911bb165b24",
-    // measurementId: "G-BX6F4GP78L"
+      // apiKey: "AIzaSyBdJcZdueFYJLEs26fqSLhjn14ns9CvV1Y",
+      // authDomain: "partyon-artist.firebaseapp.com",
+      // databaseURL: "https://partyon-artist-default-rtdb.asia-southeast1.firebasedatabase.app",
+      // projectId: "partyon-artist",
+      // storageBucket: "partyon-artist.appspot.com",
+      // messagingSenderId: "774845460870",
+      // appId: "1:774845460870:ios:d836926a2ff0600c56bc07",
+      // measurementId: "G-043F41BTBS"
       apiKey: "AIzaSyC8rMzrvvz0ZgEqnv6d88tUOTEKktgST_c",
       authDomain: "partyon-artist.firebaseapp.com",
       databaseURL: "https://partyon-artist-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -93,5 +94,24 @@ class DefaultFirebaseOptions {
       messagingSenderId: "774845460870",
       appId: "1:774845460870:web:651a7ea4a314b89956bc07",
       measurementId: "G-043F41BTBS"
+
+    // apiKey: "AIzaSyC8rMzrvvz0ZgEqnv6d88tUOTEKktgST_c",
+      // authDomain: "partyon-artist.firebaseapp.com",
+      // databaseURL: "https://partyon-artist-default-rtdb.asia-southeast1.firebasedatabase.app",
+      // projectId: "partyon-artist",
+      // storageBucket: "partyon-artist.appspot.com",
+      // messagingSenderId: "774845460870",
+      // appId: "1:774845460870:web:651a7ea4a314b89956bc07",
+      // measurementId: "G-043F41BTBS"
+
+    // apiKey: "AIzaSyCRNAx5nOIj8Z9AKfm_Pn7lxje1kRSk4OA",
+      // authDomain: "partyon-user.firebaseapp.com",
+      // projectId: "partyon-user",
+      // storageBucket: "partyon-user.firebasestorage.app",
+      // messagingSenderId: "593508339629",
+      // appId: "1:593508339629:web:90c02b29062911bb165b24",
+      // measurementId: "G-BX6F4GP78L"
+
+
   );
 }

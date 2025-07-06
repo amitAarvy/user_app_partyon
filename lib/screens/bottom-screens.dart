@@ -48,6 +48,8 @@ class _BottomNavigationBarExampleState
     // TODO: implement initState
     super.initState();
 
+    print('check web is ');
+
   }
   @override
   void dispose() {

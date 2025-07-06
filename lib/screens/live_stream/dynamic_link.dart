@@ -195,13 +195,13 @@ class FirebaseDynamicLinkEvent {
           HiveDB.putKey(eventBox, eventID, organiserID);
           Get.to(
               BookEvents(
-            clubUID: clubUID,
-            eventID: eventID,
-            organiserID: organiserID,
-            promoterID: promoterID,
-            isVenue: isVenue.toString()=='true'?true:false,
-           )
-         );
+                clubUID: clubUID,
+                eventID: eventID,
+                organiserID: organiserID,
+                promoterID: promoterID,
+                isVenue: isVenue.toString()=='true'?true:false,
+              )
+          );
         } else {
           Fluttertoast.showToast(msg: 'Event not found');
         }

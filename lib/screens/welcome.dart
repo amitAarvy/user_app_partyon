@@ -33,21 +33,30 @@ class _WelcomeState extends State<Welcome> {
 
 
     Future.delayed(Duration(seconds: 3),()async{
-      if(kIsWeb){
-        await Firebase.initializeApp(
-            name: 'MyApp',
-            options: FirebaseOptions(
-                apiKey: "AIzaSyBdJcZdueFYJLEs26fqSLhjn14ns9CvV1Y",
-                authDomain: "partyon-artist.firebaseapp.com",
-                databaseURL: "https://partyon-artist-default-rtdb.asia-southeast1.firebasedatabase.app",
-                projectId: "partyon-artist",
-                storageBucket: "partyon-artist.appspot.com",
-                messagingSenderId: "774845460870",
-                appId: "1:774845460870:ios:d836926a2ff0600c56bc07",
-                measurementId: "G-043F41BTBS"
-            )
-        );
-      }
+      // if(kIsWeb){
+      //   await Firebase.initializeApp(
+      //       name: 'MyApp',
+      //       options: FirebaseOptions(
+      //           apiKey: "AIzaSyC8rMzrvvz0ZgEqnv6d88tUOTEKktgST_c",
+      //           authDomain: "partyon-artist.firebaseapp.com",
+      //           databaseURL: "https://partyon-artist-default-rtdb.asia-southeast1.firebasedatabase.app",
+      //           projectId: "partyon-artist",
+      //           storageBucket: "partyon-artist.appspot.com",
+      //           messagingSenderId: "774845460870",
+      //           appId: "1:774845460870:web:651a7ea4a314b89956bc07",
+      //           measurementId: "G-043F41BTBS"
+      //           // apiKey: "AIzaSyBdJcZdueFYJLEs26fqSLhjn14ns9CvV1Y",
+      //           // authDomain: "partyon-artist.firebaseapp.com",
+      //           // databaseURL: "https://partyon-artist-default-rtdb.asia-southeast1.firebasedatabase.app",
+      //           // projectId: "partyon-artist",
+      //           // storageBucket: "partyon-artist.appspot.com",
+      //           // messagingSenderId: "774845460870",
+      //           // appId: "1:774845460870:ios:d836926a2ff0600c56bc07",
+      //           // measurementId: "G-043F41BTBS"
+      //
+      //       )
+      //   );
+      // }
       Navigator.pushReplacement(
           context,
           PageTransition(

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -25,7 +23,6 @@ class Discover extends StatefulWidget {
 }
 
 class _DiscoverState extends State<Discover> {
-  bool isFolded = false;
   final DynamicProvider dynamicProvider = Get.put(DynamicProvider());
   final EventController eventController = Get.put(EventController());
   bool loading = true;
@@ -41,7 +38,11 @@ class _DiscoverState extends State<Discover> {
       final eventController = Get.put(EventController());
       DateTime timeNow = DateTime.now();
       DateTime today = DateTime(timeNow.year, timeNow.month, timeNow.day);
-      final getData = await FirebaseFirestore.instance.collection('Events').where('isActive', isEqualTo: true).where('date', isGreaterThanOrEqualTo: today).get();
+      final getData = await FirebaseFirestore.instance
+          .collection('Events')
+          .where('isActive', isEqualTo: true)
+          .where('date', isGreaterThanOrEqualTo: today)
+          .get();
       List dataList = getData.docs;
       for (DocumentSnapshot eventData in dataList) {
         try {
@@ -50,15 +51,28 @@ class _DiscoverState extends State<Discover> {
             DateTime tomorrow = today.add(const Duration(days: 1));
             DateTime week = today.add(const Duration(days: 7));
             DateTime month = today.add(const Duration(days: 30));
-            Map eventMap = {'eventData': eventData.data(), 'uid': eventData.get('clubUID'), 'eventID': eventData.id};
+            Map eventMap = {
+              'eventData': eventData.data(),
+              'uid': eventData.get('clubUID'),
+              'eventID': eventData.id
+            };
 
-            if (evenDate.millisecondsSinceEpoch >= today.millisecondsSinceEpoch && evenDate.millisecondsSinceEpoch < tomorrow.millisecondsSinceEpoch) {
+            if (evenDate.millisecondsSinceEpoch >=
+                today.millisecondsSinceEpoch &&
+                evenDate.millisecondsSinceEpoch <
+                    tomorrow.millisecondsSinceEpoch) {
               eventController.addToday(eventMap);
-            } else if (evenDate.millisecondsSinceEpoch >= tomorrow.millisecondsSinceEpoch && evenDate.millisecondsSinceEpoch < week.millisecondsSinceEpoch) {
+            } else if (evenDate.millisecondsSinceEpoch >=
+                tomorrow.millisecondsSinceEpoch &&
+                evenDate.millisecondsSinceEpoch < week.millisecondsSinceEpoch) {
               eventController.addTomorrow(eventMap);
-            } else if (evenDate.millisecondsSinceEpoch >= week.millisecondsSinceEpoch && evenDate.millisecondsSinceEpoch < month.millisecondsSinceEpoch) {
+            } else if (evenDate.millisecondsSinceEpoch >=
+                week.millisecondsSinceEpoch &&
+                evenDate.millisecondsSinceEpoch <
+                    month.millisecondsSinceEpoch) {
               eventController.addWeek(eventMap);
-            } else if (evenDate.millisecondsSinceEpoch >= month.millisecondsSinceEpoch) {
+            } else if (evenDate.millisecondsSinceEpoch >=
+                month.millisecondsSinceEpoch) {
               eventController.addMonth(eventMap);
             }
           }
@@ -77,177 +91,165 @@ class _DiscoverState extends State<Discover> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Detect fold (hinge) using displayFeatures
-    final displayFeatures = MediaQuery.of(context).displayFeatures;
-
-    // Hinge is considered if there's a display feature of type 'hinge'
-    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
-
-    setState(() {
-      isFolded = isFoldedPhone;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: matte(),
-        appBar: AppBar(
-          backgroundColor: themeRed(),
-          title: GestureDetector(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Discover',
-                  style: GoogleFonts.ubuntu(fontSize: isFolded ? 24.sp : 50.sp, color: Colors.white),
-                ),
-              ],
+    backgroundColor: matte(),
+    appBar: AppBar(
+      backgroundColor: themeRed(),
+      title: GestureDetector(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Discover',
+              style:
+              GoogleFonts.ubuntu(fontSize: 50.sp, color: Colors.white),
             ),
-          ),
-          actions: [
-            IconButton(
-              onPressed: () {
-                Get.to(const SearchClub());
-              },
-              icon: const Icon(Icons.search),
-            )
           ],
         ),
-        body: loading
-            ? Center(
-                child: CircularProgressIndicator(
-                  color: themeRed(),
-                ),
-              )
-            : SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 50.h,
-                    ),
-                    heading('Today'),
-                    eventListWidget(eventController.todayList),
-                    heading('This Week'),
-                    eventListWidget(eventController.tomorrowList),
-                    heading('Next Week'),
-                    eventListWidget(eventController.nextWeekList),
-                    heading('Next Month'),
-                    eventListWidget(eventController.nextMonthList),
-                  ],
-                ),
-              ),
-      );
+      ),
+      actions: [
+        IconButton(
+          onPressed: () {
+            Get.to(const SearchClub());
+          },
+          icon: const Icon(Icons.search),
+        )
+      ],
+    ),
+    body: loading
+        ? Center(
+      child: CircularProgressIndicator(
+        color: themeRed(),
+      ),
+    )
+        : SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 50.h,
+          ),
+          heading('Today'),
+          eventListWidget(eventController.todayList),
+          heading('This Week'),
+          eventListWidget(eventController.tomorrowList),
+          heading('Next Week'),
+          eventListWidget(eventController.nextWeekList),
+          heading('Next Month'),
+          eventListWidget(eventController.nextMonthList),
+        ],
+      ),
+    ),
+  );
 
   Widget eventListWidget(List list) => SizedBox(
-        height: 550.h,
-        width: Get.width,
-        child: list.isNotEmpty
-            ? ListView.builder(
-                scrollDirection: Axis.horizontal,
-                shrinkWrap: true,
-                itemCount: list.length,
-                physics: const BouncingScrollPhysics(),
-                itemBuilder: (BuildContext context, int index) {
-                  try {
-                    final DateFormat formatter = DateFormat('dd/MM');
-                    Map eventData = list[index]['eventData'];
-                    return SizedBox(
-                      width: 600.w,
-                      height: 600.h * 9 / (isFolded ? 8 : 16),
-                      child: Column(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              final IndexProvider c = Get.put(IndexProvider());
-                              c.changeIndex(1);
-                              Get.to(BookEvents(
-                                clubUID: eventData['clubUID'],
-                                eventID: list[index]['eventID'],
-                              )
+    height: 550.h,
+    width: Get.width,
+    child: list.isNotEmpty
+        ? ListView.builder(
+      scrollDirection: Axis.horizontal,
+      shrinkWrap: true,
+      itemCount: list.length,
+      physics: const BouncingScrollPhysics(),
+      itemBuilder: (BuildContext context, int index) {
+        try {
+          final DateFormat formatter = DateFormat('dd/MM');
+          Map eventData = list[index]['eventData'];
+          return SizedBox(
+            width: 600.w,
+            height: 600.h * 9 / 16,
+            child: Column(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    final IndexProvider c = Get.put(IndexProvider());
+                    c.changeIndex(1);
+                    Get.to(
+                        BookEvents(clubUID: eventData['clubUID'], eventID: list[index]['eventID'],)
 
-                                  // EventDetails(
-                                  //   eventData['coverImages'] as List,
-                                  //   'tag',
-                                  //   eventData['title'],
-                                  //   eventData['date'].toDate(),
-                                  //   eventData['venueName'],
-                                  //   eventData['genre'],
-                                  //   eventData['artistName'],
-                                  //   eventID: list[index]['eventID'],
-                                  //   startTime: eventData['startTime'].toDate(),
-                                  //   endTime: eventData['endTime'].toDate(),
-                                  //   aboutEvent: eventData['briefEvent'],
-                                  //   clubUID: eventData['clubUID'],
-                                  // ),
-                                  );
-                            },
-                            child: SizedBox(
-                              height: 500.h * 9 / (isFolded ? 8 : 16),
-                              width: 500.w,
-                              child: CachedNetworkImage(
-                                imageUrl: eventData['coverImages'][0],
-                                placeholder: (_, __) => const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                                fit: BoxFit.fill,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            formatter.format(eventData['date'].toDate()),
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.ubuntu(
-                              color: Colors.white,
-                              fontSize: isFolded ? 24.sp : 50.sp,
-                            ),
-                          ).paddingSymmetric(vertical: 30.h),
-                          Text(
-                            eventData['title'] ?? '',
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.ubuntu(
-                              color: Colors.white,
-                              fontSize: isFolded ? 24.sp : 50.sp,
-                            ),
-                          )
-                        ],
-                      ).marginAll(20.w),
+                      // EventDetails(
+                      //   eventData['coverImages'] as List,
+                      //   'tag',
+                      //   eventData['title'],
+                      //   eventData['date'].toDate(),
+                      //   eventData['venueName'],
+                      //   eventData['genre'],
+                      //   eventData['artistName'],
+                      //   eventID: list[index]['eventID'],
+                      //   startTime: eventData['startTime'].toDate(),
+                      //   endTime: eventData['endTime'].toDate(),
+                      //   aboutEvent: eventData['briefEvent'],
+                      //   clubUID: eventData['clubUID'],
+                      // ),
                     );
-                  } catch (e) {
-                    if (kDebugMode) print(e);
-                  }
-                  return null;
-                },
-              )
-            : Center(
-                child: Text(
-                  'No Events found',
-                  style: GoogleFonts.ubuntu(color: Colors.white, fontSize: 60.sp),
+                  },
+                  child: SizedBox(
+                    height: 500.h * 9 / 16,
+                    width: 500.w,
+                    child: CachedNetworkImage(
+                      imageUrl: eventData['coverImages'][0],
+                      placeholder: (_, __) => const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                      fit: BoxFit.fill,
+                    ),
+                  ),
                 ),
-              ),
-      );
+                Text(
+                  formatter.format(eventData['date'].toDate()),
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.ubuntu(
+                    color: Colors.white,
+                    fontSize: 50.sp,
+                  ),
+                ).paddingSymmetric(vertical: 30.h),
+                Text(
+                  eventData['title'] ?? '',
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.ubuntu(
+                    color: Colors.white,
+                    fontSize: 50.sp,
+                  ),
+                )
+              ],
+            ).marginAll(20.w),
+          );
+        } catch (e) {
+          if (kDebugMode) print(e);
+        }
+        return null;
+      },
+    )
+        : Center(
+      child: Text(
+        'No Events found',
+        style:
+        GoogleFonts.ubuntu(color: Colors.white, fontSize: 60.sp),
+      ),
+    ),
+  );
 
   Widget heading(String heading) => Row(
-        children: [
-          Text(
-            heading,
-            style: GoogleFonts.ubuntu(
-              color: Colors.white,
-              fontSize: 60.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ).marginAll(20.w),
-        ],
-      );
+    children: [
+      Text(
+        heading,
+        style: GoogleFonts.ubuntu(
+          color: Colors.white,
+          fontSize: 60.sp,
+          fontWeight: FontWeight.bold,
+        ),
+      ).marginAll(20.w),
+    ],
+  );
 }
 
 class EventController extends GetxController {
-  RxList todayList = [].obs, tomorrowList = [].obs, nextWeekList = [].obs, nextMonthList = [].obs;
+  RxList todayList = [].obs,
+      tomorrowList = [].obs,
+      nextWeekList = [].obs,
+      nextMonthList = [].obs;
 
   void addToday(var val) {
     todayList.add(val);

@@ -22,16 +22,17 @@ import 'package:user/screens/payment/payment_list_view.dart';
 
 import '../screens/authentication/views/user_info.dart';
 
-const String _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+const String _chars =
+    'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
 Random _rnd = Random();
 // final HomeController hc = Get.put(HomeController());
 
 String getRandomString(int length) => String.fromCharCodes(
-      Iterable.generate(
-        length,
+  Iterable.generate(
+    length,
         (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length)),
-      ),
-    );
+  ),
+);
 
 const String cloudFlareAccountID = '89174e54fcc5719f4bfecc8c3b8b216f';
 const String cloudFlareToken = 'vb5cg5bPCA_ImMFvDV4SD1f_pHlvBkDdc06ra9SK';
@@ -47,9 +48,13 @@ Color matte() => const Color(0xff171717);
 Color purpleInd() => const Color(0xff4a58AE);
 
 extension CapExtension on String {
-  String get inCaps => isNotEmpty ? '${this[0].toUpperCase()}${substring(1)}' : '';
+  String get inCaps =>
+      isNotEmpty ? '${this[0].toUpperCase()}${substring(1)}' : '';
 
-  String get capitalizeFirstOfEach => replaceAll(RegExp(' +'), ' ').split(' ').map((String str) => str.inCaps).join(' ');
+  String get capitalizeFirstOfEach => replaceAll(RegExp(' +'), ' ')
+      .split(' ')
+      .map((String str) => str.inCaps)
+      .join(' ');
 }
 
 class ShowOptions extends ChangeNotifier {
@@ -65,44 +70,45 @@ String? uid() => FirebaseAuth.instance.currentUser?.uid;
 String? phoneNumber() => FirebaseAuth.instance.currentUser?.phoneNumber;
 
 Text headText() => Text(
-      'PartyOn',
-      style: GoogleFonts.dancingScript(
-        color: Colors.white,
-        fontSize: 80.sp,
-        fontWeight: FontWeight.bold,
-      ),
-    );
+  'PartyOn',
+  style: GoogleFonts.dancingScript(
+    color: Colors.white,
+    fontSize: 80.sp,
+    fontWeight: FontWeight.bold,
+  ),
+);
 
 Widget textField(
-  String label,
-  TextEditingController controller, {
-  bool isNum = false,
-  isEmail = false,
-  isPinCode = false,
-  isPhone = false,
-  readyOnly = false,
-  isFolded = false,
-}) =>
+    String label,
+    TextEditingController controller, {
+      bool isNum = false,
+      isEmail = false,
+      isPinCode = false,
+      isPhone = false,
+      readyOnly = false,
+    }) =>
     Container(
       width: Get.width,
       height: 130.h,
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.all(Radius.circular(20)),
       ),
-      padding: EdgeInsets.only(left: isFolded ? 0.w : 20.w, right: isFolded ? 0.w : 20.w),
+      padding: EdgeInsets.only(left: 20.w, right: 20.w),
       child: TextField(
-        readOnly: readyOnly == true
-            ? readyOnly
-            : isEmail == true && isPhone == false
-                ? true
-                : false,
+        readOnly:readyOnly ==true?readyOnly: isEmail == true && isPhone == false ? true : false,
         // enabled: isEmail==true?false:true,
         keyboardType: isNum == true ? TextInputType.number : TextInputType.text,
-        inputFormatters: [if (isPinCode == true) LengthLimitingTextInputFormatter(6) else LengthLimitingTextInputFormatter(30)],
+        inputFormatters: [
+          if (isPinCode == true)
+            LengthLimitingTextInputFormatter(6)
+          else
+            LengthLimitingTextInputFormatter(30)
+        ],
         controller: controller,
 
         style: GoogleFonts.merriweather(color: Colors.white),
         decoration: InputDecoration(
+
           enabledBorder: const OutlineInputBorder(
             borderSide: BorderSide(color: Colors.white70),
           ),
@@ -112,8 +118,9 @@ Widget textField(
           ),
           hintStyle: GoogleFonts.ubuntu(),
           labelText: label,
-          labelStyle: TextStyle(color: Colors.white70, fontSize: isFolded ? 16.sp : 40.sp),
+          labelStyle: TextStyle(color: Colors.white70, fontSize: 40.sp),
         ),
+
       ),
     ).marginOnly(left: 30.w, right: 30.w, bottom: 30.h, top: 20.h);
 
@@ -150,157 +157,157 @@ String getMonthName(int monthNum) {
 
 final HomeController homeController = Get.put(HomeController());
 
-Widget drawer({isFolded = false}) => Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.pink, Colors.red],
-        ),
+Widget drawer() => Container(
+  decoration: const BoxDecoration(
+    gradient: LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [Colors.pink, Colors.red],
+    ),
+  ),
+  child: Column(
+    children: [
+      SizedBox(
+        height: 50.h,
       ),
-      child: Column(
-        children: [
-          SizedBox(
-            height: 180.h,
-          ),
-          GestureDetector(
-            onTap: () {
-              Get.to(
-                UserInfoData(
-                  email: (phoneNumber() ?? '').toString(),
-                  isPhone: true,
-                  isProfile: true,
-                ),
-              );
-            },
-            child: CircleAvatar(
-              backgroundImage: const AssetImage('assets/profile.png'),
-              radius: 150.h,
-              backgroundColor: Colors.black,
-            ),
-          ),
-          Obx(
+      GestureDetector(
+        onTap:(){
+          Get.to(UserInfoData(
+            email: (phoneNumber() ?? '').toString(),
+            isPhone: true,
+            isProfile: true,
+          ),);
+        },
+        child: CircleAvatar(
+          backgroundImage: const AssetImage('assets/profile.png'),
+          radius: 150.h,
+          backgroundColor: Colors.black,
+        ).marginAll(20.h),
+      ),
+      Obx(
             () => Text(
-              homeController.userName,
-              style: GoogleFonts.ubuntu(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-                fontSize: 60.sp,
+          homeController.userName,
+          style: GoogleFonts.ubuntu(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+            fontSize: 60.sp,
+          ),
+        ),
+      ).marginAll(30.h),
+      SizedBox(
+        height: 30.h,
+      ),
+      Divider(
+        color: Colors.white,
+        thickness: 1,
+        indent: 50.w,
+        endIndent: 50.w,
+      ),
+      SizedBox(
+        height: Get.width,
+        width: Get.width,
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Opacity(
+                opacity: 0.2,
+                child: SizedBox(
+                  height: 600.h,
+                  width: 600.h,
+                  child: Image.asset('assets/logo.png'),
+                ),
               ),
             ),
-          ).marginAll(30.h),
-          SizedBox(
-            height: 30.h,
-          ),
-          Divider(
-            color: Colors.white,
-            thickness: 1,
-            indent: 50.w,
-            endIndent: 50.w,
-          ),
-          SizedBox(
-            height: Get.width - (isFolded ? 400 : 0),
-            width: Get.width,
-            child: Stack(
+            Column(
               children: [
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Opacity(
-                    opacity: 0.2,
-                    child: SizedBox(
-                      height: 600.h,
-                      width: 600.h,
-                      child: Image.asset('assets/logo.png'),
+                ListTile(
+                  leading: const Icon(
+                    Icons.home,
+                    color: Colors.white,
+                  ),
+                  title: Text(
+                    'Home',
+                    style: GoogleFonts.montserrat(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(
-                        Icons.home,
-                        color: Colors.white,
-                      ),
-                      title: Text(
-                        'Home',
-                        style: GoogleFonts.montserrat(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                ListTile(
+                  onTap: () {
+                    Get.to(() => const PaymentListView());
+                  },
+                  leading: const Icon(
+                    FontAwesomeIcons.buildingColumns,
+                    color: Colors.white,
+                  ),
+                  title: Text(
+                    'Payments',
+                    style: GoogleFonts.montserrat(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
-                    ListTile(
-                      onTap: () {
-                        Get.to(() => const PaymentListView());
-                      },
-                      leading: const Icon(
-                        FontAwesomeIcons.buildingColumns,
-                        color: Colors.white,
-                      ),
-                      title: Text(
-                        'Payments',
-                        style: GoogleFonts.montserrat(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                  ),
+                ),
+                // ListTile(
+                //   onTap: () {
+                //     Get.to(() => const BookingList());
+                //   },
+                //   leading: const Icon(
+                //     FontAwesomeIcons.ticket,
+                //     color: Colors.white,
+                //   ),
+                //   title: Text(
+                //     'My Bookings',
+                //     style: GoogleFonts.montserrat(
+                //       color: Colors.white,
+                //       fontWeight: FontWeight.bold,
+                //     ),
+                //   ),
+                // ),
+                ListTile(
+                  onTap: () {
+                    Get.to(const Help());
+                  },
+                  leading: const Icon(
+                    Icons.help,
+                    color: Colors.white,
+                  ),
+                  title: Text(
+                    'Help',
+                    style: GoogleFonts.montserrat(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
-                    // ListTile(
-                    //   onTap: () {
-                    //     Get.to(() => const BookingList());
-                    //   },
-                    //   leading: const Icon(
-                    //     FontAwesomeIcons.ticket,
-                    //     color: Colors.white,
-                    //   ),
-                    //   title: Text(
-                    //     'My Bookings',
-                    //     style: GoogleFonts.montserrat(
-                    //       color: Colors.white,
-                    //       fontWeight: FontWeight.bold,
-                    //     ),
-                    //   ),
-                    // ),
-                    ListTile(
-                      onTap: () {
-                        Get.to(const Help());
-                      },
-                      leading: const Icon(
-                        Icons.help,
-                        color: Colors.white,
-                      ),
-                      title: Text(
-                        'Help',
-                        style: GoogleFonts.montserrat(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                  ),
+                ),
+                ListTile(
+                  onTap: () {
+                    FirebaseAuth.instance
+                        .signOut()
+                        .whenComplete(() => Get.off(const PhoneLogin()));
+                  },
+                  leading: const Icon(
+                    Icons.logout,
+                    color: Colors.white,
+                  ),
+                  title: Text(
+                    'Log Out',
+                    style: GoogleFonts.montserrat(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
-                    ListTile(
-                      onTap: () {
-                        FirebaseAuth.instance.signOut().whenComplete(() => Get.off(const PhoneLogin()));
-                      },
-                      leading: const Icon(
-                        Icons.logout,
-                        color: Colors.white,
-                      ),
-                      title: Text(
-                        'Log Out',
-                        style: GoogleFonts.montserrat(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    );
+    ],
+  ),
+);
 
 Future<void> openMap(double latitude, double longitude) async {
   final url = Uri.parse(
@@ -313,62 +320,62 @@ Future<void> openMap(double latitude, double longitude) async {
   }
 }
 
-Widget eventCarousel(List images, {bool isNetworkImage = false}) => CarouselSlider(
-    items: images
-        .map((image) => Builder(
-              builder: (BuildContext context) => Container(
-                width: MediaQuery.of(context).size.width,
-                margin: EdgeInsets.zero,
-                // decoration: const BoxDecoration(color: Colors.amber),
-                child: isNetworkImage
-                    ? kIsWeb
-                        ? Image.network(
-                            '$image',
-                            errorBuilder: (_, __, ___) => Center(
-                                child: Icon(
-                              Icons.image,
-                              color: Colors.white,
-                              size: 300.h,
-                            )),
-                            fit: BoxFit.fill,
-                          )
-                        : CachedNetworkImage(
-                            imageUrl: image,
-                            errorWidget: (_, __, ___) => Center(
-                                child: Icon(
-                              Icons.image,
-                              color: Colors.white,
-                              size: 300.h,
-                            )),
-                            fit: BoxFit.fill,
-                            placeholder: (_, __) => const SizedBox(
-                              child: Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            ),
-                          )
-                    : Image.file(
-                        image!,
-                        fit: BoxFit.cover,
-                      ),
+Widget eventCarousel(List images, {bool isNetworkImage = false}) =>
+    CarouselSlider(
+        items: images
+            .map((image) => Builder(
+          builder: (BuildContext context) => Container(
+            width: MediaQuery.of(context).size.width,
+            margin: EdgeInsets.zero,
+            // decoration: const BoxDecoration(color: Colors.amber),
+            child: isNetworkImage
+                ? kIsWeb?
+            Image.network('$image',
+              errorBuilder: (_, __, ___) => Center(
+                  child: Icon(
+                    Icons.image,
+                    color: Colors.white,
+                    size: 300.h,
+                  )),
+              fit: BoxFit.fill,
+            ):
+            CachedNetworkImage(
+              imageUrl: image,
+              errorWidget: (_, __, ___) => Center(
+                  child: Icon(
+                    Icons.image,
+                    color: Colors.white,
+                    size: 300.h,
+                  )),
+              fit: BoxFit.fill,
+              placeholder: (_, __) => const SizedBox(
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
               ),
-            ))
-        .toList(),
-    options: CarouselOptions(
-      // height: 400,
-      aspectRatio: 9 / 16,
-      viewportFraction: 1,
-      initialPage: 0,
-      enableInfiniteScroll: false,
-      reverse: false,
-      autoPlay: false,
-      autoPlayInterval: const Duration(seconds: 3),
-      autoPlayAnimationDuration: const Duration(milliseconds: 800),
-      autoPlayCurve: Curves.fastOutSlowIn,
-      enlargeCenterPage: true,
-      enlargeFactor: 0.3,
-      scrollDirection: Axis.horizontal,
-    ));
+            )
+                : Image.file(
+              image!,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ))
+            .toList(),
+        options: CarouselOptions(
+          // height: 400,
+          aspectRatio: 9/16,
+          viewportFraction: 1,
+          initialPage: 0,
+          enableInfiniteScroll: false,
+          reverse: false,
+          autoPlay: false,
+          autoPlayInterval: const Duration(seconds: 3),
+          autoPlayAnimationDuration: const Duration(milliseconds: 800),
+          autoPlayCurve: Curves.fastOutSlowIn,
+          enlargeCenterPage: true,
+          enlargeFactor: 0.3,
+          scrollDirection: Axis.horizontal,
+        ));
 
 Future<bool> onWillPop(BuildContext context) async {
   bool exit = false;
@@ -397,7 +404,8 @@ Future<bool> onWillPop(BuildContext context) async {
   return exit;
 }
 
-dynamic getKeyValueFirestore(DocumentSnapshot documentSnapshot, String keyName) {
+dynamic getKeyValueFirestore(
+    DocumentSnapshot documentSnapshot, String keyName) {
   Map<String, dynamic>? data = documentSnapshot.data() as Map<String, dynamic>;
   if (documentSnapshot.exists && data.containsKey(keyName)) {
     return documentSnapshot.get(keyName);
@@ -407,8 +415,13 @@ dynamic getKeyValueFirestore(DocumentSnapshot documentSnapshot, String keyName) 
 }
 
 Widget customisedButton(
-  String buttonText, {
-  required Function() onTap,
-  Color? buttonColor,
-}) =>
-    ElevatedButton(onPressed: () => onTap(), style: ButtonStyle(backgroundColor: MaterialStateProperty.resolveWith((states) => buttonColor ?? Colors.red)), child: Text(buttonText));
+    String buttonText, {
+      required Function() onTap,
+      Color? buttonColor,
+    }) =>
+    ElevatedButton(
+        onPressed: () => onTap(),
+        style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.resolveWith(
+                    (states) => buttonColor ?? Colors.red)),
+        child: Text(buttonText));

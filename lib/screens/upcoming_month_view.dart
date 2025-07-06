@@ -1,7 +1,5 @@
 // ignore_for_file: file_names, prefer_const_constructors, avoid_unnecessary_containers, sized_box_for_whitespace, prefer_const_literals_to_create_immutables, unnecessary_string_interpolations
 
-import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
@@ -26,8 +24,8 @@ class UpcomingMonthView extends StatefulWidget {
 }
 
 class _UpcomingMonthViewState extends State<UpcomingMonthView> {
+
   DateTime month = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).add(const Duration(days: 30));
-  bool isFolded = false;
 
   DateTime today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
 
@@ -39,22 +37,7 @@ class _UpcomingMonthViewState extends State<UpcomingMonthView> {
     super.initState();
     // fetchUpcomingMonthEventData();
   }
-
   final HomeController hc = Get.put(HomeController());
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Detect fold (hinge) using displayFeatures
-    final displayFeatures = MediaQuery.of(context).displayFeatures;
-
-    // Hinge is considered if there's a display feature of type 'hinge'
-    final isFoldedPhone = displayFeatures.any((feature) => feature.type == DisplayFeatureType.fold && feature.bounds != Rect.zero);
-
-    setState(() {
-      isFolded = isFoldedPhone;
-    });
-  }
 
   // void fetchUpcomingMonthEventData() async{
   //   QuerySnapshot data = await FirebaseFirestore.instance
@@ -90,12 +73,12 @@ class _UpcomingMonthViewState extends State<UpcomingMonthView> {
   @override
   Widget build(BuildContext context) {
     return
-        // upcomingMonthEventData == null
-        //   ? const Center(child: CircularProgressIndicator(color: Colors.white))
-        //   : upcomingMonthEventData!.isEmpty
-        //   ? const Center(child: Text("No events found", style: TextStyle(color: Colors.white)))
-        //   :
-        Container(
+      // upcomingMonthEventData == null
+      //   ? const Center(child: CircularProgressIndicator(color: Colors.white))
+      //   : upcomingMonthEventData!.isEmpty
+      //   ? const Center(child: Text("No events found", style: TextStyle(color: Colors.white)))
+      //   :
+      Container(
       height: 370.0,
       child: ListView.builder(
         itemCount: widget.upcomingMonthEventData!.length,
@@ -103,14 +86,17 @@ class _UpcomingMonthViewState extends State<UpcomingMonthView> {
         padding: EdgeInsets.zero,
         scrollDirection: Axis.horizontal,
         itemBuilder: (context, index) {
-          final productData = widget.upcomingMonthEventData![index];
+          final productData =widget.upcomingMonthEventData![index];
 
           // Convert Firestore data to a Map
           final productDataMap = productData.data() as Map<String, dynamic>;
 
           // Check if coverImages exists and is a valid, non-empty list
           List<dynamic> coverImages = [];
-          if (productDataMap.containsKey('coverImages') && productDataMap['coverImages'] != null && productDataMap['coverImages'] is List && productDataMap['coverImages'].isNotEmpty) {
+          if (productDataMap.containsKey('coverImages') &&
+              productDataMap['coverImages'] != null &&
+              productDataMap['coverImages'] is List &&
+              productDataMap['coverImages'].isNotEmpty) {
             coverImages = productDataMap['coverImages'];
           } else {
             coverImages = ['https://via.placeholder.com/200']; // Fallback image if not valid
@@ -121,18 +107,18 @@ class _UpcomingMonthViewState extends State<UpcomingMonthView> {
             categoryId: productDataMap['title'] ?? '',
             productName: productDataMap['title'] ?? '',
             categoryName: productDataMap['venueName'] ?? '',
-            salePrice: productDataMap['startTime'] != null ? productDataMap['startTime'].toDate() : DateTime.now(),
+            salePrice: productDataMap['startTime'] != null
+                ? productDataMap['startTime'].toDate()
+                : DateTime.now(),
             fullPrice: productDataMap['title'] ?? '',
             productImages: coverImages,
           );
 
           return GestureDetector(
             onTap: () async {
-              Get.to(
-                BookEvents(
-                  clubUID: productDataMap['clubUID'] ?? '',
-                  eventID: productData.id,
-                ),
+              Get.to(BookEvents(clubUID: productDataMap['clubUID'] ?? '', eventID: productData.id,
+
+              ),
                 // EventDetails(
                 //   coverImages,
                 //   'tag', // Modify this if needed
@@ -170,7 +156,7 @@ class _UpcomingMonthViewState extends State<UpcomingMonthView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AspectRatio(
-                      aspectRatio: 9 / (isFolded ? 8 : 16),
+                      aspectRatio: 9/16,
                       child: Container(
                         width: Get.width,
                         // height: 180,
@@ -180,19 +166,20 @@ class _UpcomingMonthViewState extends State<UpcomingMonthView> {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(10),
-                          child: kIsWeb
-                              ? netWorkImage(url: coverImages[0])
-                              : CachedNetworkImage(
-                                  fit: BoxFit.fill,
-                                  fadeInDuration: const Duration(milliseconds: 100),
-                                  fadeOutDuration: const Duration(milliseconds: 100),
-                                  useOldImageOnUrlChange: true,
-                                  filterQuality: FilterQuality.low,
-                                  imageUrl: coverImages[0], // Use the first image in the list
-                                  placeholder: (_, __) => const Center(
-                                    child: CircularProgressIndicator(color: Colors.orange),
-                                  ),
-                                ),
+                          child:
+                          kIsWeb?
+                          netWorkImage(url:coverImages[0] ):
+                          CachedNetworkImage(
+                            fit: BoxFit.fill,
+                            fadeInDuration: const Duration(milliseconds: 100),
+                            fadeOutDuration: const Duration(milliseconds: 100),
+                            useOldImageOnUrlChange: true,
+                            filterQuality: FilterQuality.low,
+                            imageUrl: coverImages[0], // Use the first image in the list
+                            placeholder: (_, __) => const Center(
+                              child: CircularProgressIndicator(color: Colors.orange),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -203,7 +190,7 @@ class _UpcomingMonthViewState extends State<UpcomingMonthView> {
                         fontSize: 13.0,
                         color: Colors.white,
                       ),
-                    ).marginOnly(left: 10.0, right: 10.0, top: 4),
+                    ).paddingOnly(top: 10.0).marginOnly(left: 10.0, right: 10.0),
                     Text(
                       productModel.productName,
                       overflow: TextOverflow.ellipsis,
@@ -212,18 +199,23 @@ class _UpcomingMonthViewState extends State<UpcomingMonthView> {
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
                       ),
-                    ).marginOnly(left: 10.0, right: 10.0, bottom: 2),
+                    ).paddingOnly(top: 5.0).marginOnly(left: 10.0, right: 10.0),
+                    const SizedBox(height: 2),
                     FutureBuilder(
                       future: FirebaseFirestore.instance.collection('Club').doc(productModel.productId).get(),
                       builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) return Offstage();
-                        if (snapshot.hasError) return Offstage();
-                        if (snapshot.hasData) {
+                        if(snapshot.connectionState == ConnectionState.waiting) return Offstage();
+                        if(snapshot.hasError) return Offstage();
+                        if(snapshot.hasData){
                           return Text(
                             maxLines: 2,
-                            "${snapshot.data!.data() == null ? '' : (snapshot.data!.data() as Map<String, dynamic>)['address'] ?? ''}",
+                            "${snapshot.data!.data() == null ? '' : (snapshot.data!.data() as Map<String, dynamic>)['clubName'] ?? ''}",
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 12.0, color: Colors.white, overflow: TextOverflow.ellipsis),
+                            style: TextStyle(
+                                fontSize: 12.0,
+                                color: Colors.white,
+                                overflow: TextOverflow.ellipsis
+                            ),
                           ).marginOnly(left: 10.0, right: 10.0);
                         }
                         return Offstage();

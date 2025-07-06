@@ -105,13 +105,12 @@ class _PhoneLoginState extends State<PhoneLogin> {
               ElevatedButton(
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.resolveWith(
-                    (Set<MaterialState> states) => Colors.black,
+                        (Set<MaterialState> states) => Colors.black,
                   ),
                 ),
                 child: const Text('Confirm'),
                 onPressed: () async {
                   final String code = otpTextController.text.trim();
-
                   try {
                     print(generatedOtp);
                     print(code);
@@ -189,11 +188,11 @@ class _PhoneLoginState extends State<PhoneLogin> {
                 },
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.resolveWith(
-                    (Set<MaterialState> states) => Colors.green,
+                        (Set<MaterialState> states) => Colors.green,
                   ),
                 ),
                 child: Obx(
-                  () => Text(
+                      () => Text(
                     otpController.count.value == 0 ? 'Resend' : 'Resend in ${otpController.count.value}',
                     style: GoogleFonts.ubuntu(color: Colors.white),
                   ),
@@ -247,103 +246,103 @@ class _PhoneLoginState extends State<PhoneLogin> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: Colors.white,
-        body: Stack(
-          children: [
-            SizedBox(
-              height: Get.height,
-              width: Get.width,
-              child: Image.asset(
-                'assets/loginBack.png',
-                fit: BoxFit.fill,
-              ),
-            ),
-            //Center(child: Text("PARTY ON",style: GoogleFonts.ubuntu(color: Colors.white,fontSize: 140.sp,fontWeight: FontWeight.bold),),),
-            SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.only(left: 75.w, right: 75.w),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(height: Get.height / 1.3),
-                    // Text(
-                    //   "Login through Moblie",
-                    //   style: TextStyle(color: Colors.white, fontSize: 70.sp),
-                    // ),
-
-                    Container(
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                        color: Colors.black87,
-                      ),
-                      child: TextField(
-                        autofocus: false,
-                        inputFormatters: [LengthLimitingTextInputFormatter(10)],
-                        style: GoogleFonts.ubuntu(color: Colors.white),
-                        keyboardType: TextInputType.number,
-                        controller: _phoneController,
-                        decoration: InputDecoration(
-                          prefixText: '+91 ',
-                          border: InputBorder.none,
-                          hintStyle: GoogleFonts.ubuntu(color: Colors.white),
-                          icon: const Icon(
-                            Icons.call,
-                            color: Colors.white,
-                          ),
-                          hintText: 'Enter mobile number',
-                        ),
-                      ).marginSymmetric(horizontal: 50.w),
-                    ),
-                    SizedBox(
-                      height: 30.h,
-                    ),
-                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      ElevatedButton(
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.resolveWith((Set<MaterialState> states) => Colors.orange),
-                        ),
-                        onPressed: () {
-                          _phoneController.value.text.length < 10
-                              ? Fluttertoast.showToast(
-                                  msg: 'Enter a valid number',
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.red,
-                                  textColor: Colors.white,
-                                  fontSize: isFolded ? 24.sp : 45.sp,
-                                )
-                              : _phoneSignIn(_phoneController.text);
-                        },
-                        child: const Text('Send OTP'),
-                      )
-                    ]),
-                    SizedBox(
-                      height: 30.h,
-                    ),
-                    // ElevatedButton(
-                    //   style: ButtonStyle(backgroundColor:
-                    //       MaterialStateProperty.resolveWith((states) {
-                    //     return theme == "light"
-                    //         ? Colors.black45
-                    //         : Colors.white38;
-                    //   })),
-                    //   onPressed: () {
-                    //     Get.back();
-                    //   },
-                    //   child: Text("Back to Login"),
-                    // ),
-                    SizedBox(
-                      height: 50.h,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (theme != 'light') const LogoHead()
-          ],
+    backgroundColor: Colors.white,
+    body: Stack(
+      children: [
+        SizedBox(
+          height: Get.height,
+          width: Get.width,
+          child: Image.asset(
+            'assets/loginBack.png',
+            fit: BoxFit.fill,
+          ),
         ),
-      );
+        //Center(child: Text("PARTY ON",style: GoogleFonts.ubuntu(color: Colors.white,fontSize: 140.sp,fontWeight: FontWeight.bold),),),
+        SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(left: 75.w, right: 75.w),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(height: Get.height / 1.3),
+                // Text(
+                //   "Login through Moblie",
+                //   style: TextStyle(color: Colors.white, fontSize: 70.sp),
+                // ),
+
+                Container(
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                    color: Colors.black87,
+                  ),
+                  child: TextField(
+                    autofocus: false,
+                    inputFormatters: [LengthLimitingTextInputFormatter(10)],
+                    style: GoogleFonts.ubuntu(color: Colors.white),
+                    keyboardType: TextInputType.number,
+                    controller: _phoneController,
+                    decoration: InputDecoration(
+                      prefixText: '+91 ',
+                      border: InputBorder.none,
+                      hintStyle: GoogleFonts.ubuntu(color: Colors.white),
+                      icon: const Icon(
+                        Icons.call,
+                        color: Colors.white,
+                      ),
+                      hintText: 'Enter mobile number',
+                    ),
+                  ).marginSymmetric(horizontal: 50.w),
+                ),
+                SizedBox(
+                  height: 30.h,
+                ),
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.resolveWith((Set<MaterialState> states) => Colors.orange),
+                    ),
+                    onPressed: () {
+                      _phoneController.value.text.length < 10
+                          ? Fluttertoast.showToast(
+                        msg: 'Enter a valid number',
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.CENTER,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.red,
+                        textColor: Colors.white,
+                        fontSize: isFolded ? 24.sp : 45.sp,
+                      )
+                          : _phoneSignIn(_phoneController.text);
+                    },
+                    child: const Text('Send OTP'),
+                  )
+                ]),
+                SizedBox(
+                  height: 30.h,
+                ),
+                // ElevatedButton(
+                //   style: ButtonStyle(backgroundColor:
+                //       MaterialStateProperty.resolveWith((states) {
+                //     return theme == "light"
+                //         ? Colors.black45
+                //         : Colors.white38;
+                //   })),
+                //   onPressed: () {
+                //     Get.back();
+                //   },
+                //   child: Text("Back to Login"),
+                // ),
+                SizedBox(
+                  height: 50.h,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (theme != 'light') const LogoHead()
+      ],
+    ),
+  );
 }
 
 class OtpController extends GetxController {

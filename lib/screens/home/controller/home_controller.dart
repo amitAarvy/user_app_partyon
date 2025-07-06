@@ -71,6 +71,7 @@ Future<void> getClubList() async {
   homeController.isLoading = false;
 }
 
+
 class HomeController extends GetxController {
   final RxString _userName = "...".obs;
   final RxDouble _lat = 0.0.obs, _long = 0.0.obs;

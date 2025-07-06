@@ -13,32 +13,53 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:in_app_update/in_app_update.dart';
 import 'package:provider/provider.dart';
 import 'package:upgrader/upgrader.dart';
 import 'package:user/firebase_options.dart';
 import 'package:user/screens/authentication/views/phone.dart';
 import 'package:user/screens/authentication/views/user_info.dart';
 import 'package:user/screens/bottom-screens.dart';
+import 'package:user/screens/events/book_events.dart';
 import 'package:user/screens/events/book_events_controller.dart';
-import 'package:user/screens/home/view/home_view.dart';
 import 'package:user/screens/home/controller/home_controller.dart';
 import 'package:user/screens/live_stream/dynamic_link.dart';
 import 'package:user/screens/welcome.dart';
 import 'package:user/utils/dynamic_provider.dart';
 import 'package:user/utils/utils.dart';
+// import 'package:web/web.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-      name: 'MyApp',
-      options: Platform.isIOS
-          ? DefaultFirebaseOptions.ios
-          : DefaultFirebaseOptions.android);
+  // await Firebase.initializeApp(
+  //     name: 'MyApp',
+  //     options: kIsWeb?DefaultFirebaseOptions.web:Platform.isIOS
+  //         ? DefaultFirebaseOptions.ios
+  //         : DefaultFirebaseOptions.android);
+
+  // if(!kIsWeb){
+    await Firebase.initializeApp(
+        name: 'MyApp',
+        options: Platform.isIOS
+            ? DefaultFirebaseOptions.ios
+            :Platform.isAndroid? DefaultFirebaseOptions.android:DefaultFirebaseOptions.currentPlatform);
+  // }else{
+  //   print('yes it it web');
+  //   try{
+  //     await Firebase.initializeApp(
+  //         // name: 'MyWebApp',
+  //         options: DefaultFirebaseOptions.web
+  //     );
+  //   }catch(e){
+  //     print('debug print is ${e}');
+  //   }
+  // }
+
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -52,7 +73,8 @@ class _MyAppState extends State<MyApp> {
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       systemNavigationBarColor: Colors.black,
       systemNavigationBarIconBrightness: Brightness.light,
-    ));
+    )
+    );
   }
 
   @override
@@ -112,7 +134,7 @@ class _MyAppState extends State<MyApp> {
                   if (!context.mounted) return;
                   initDynamicLinks(context);
                 },
-                title: 'PartyOn User',
+                title: 'PartyOn',
                 theme: ThemeData(
                   useMaterial3: false,
                   primarySwatch: Colors.indigo,
@@ -120,11 +142,16 @@ class _MyAppState extends State<MyApp> {
                     Theme.of(context).textTheme,
                   ),
                 ),
-                home: UpgradeAlert(
+                home:
+                // kIsWeb? Welcome(
+                //     initPage: InitPage())
+                //         :
+                UpgradeAlert(
                   child: const Welcome(
                     initPage: InitPage(),
                   ),
-                ))));
+                )
+            )));
   }
 }
 
@@ -143,6 +170,18 @@ class _InitPageState extends State<InitPage> {
   //   );
   //   await cloudflare.init();
   // }
+  Map<String, String>? initialQueryParameters;
+
+  webEventLink(){
+    // initialQueryParameters = Uri.parse(window.location.href).queryParameters;
+    // print('dynamic link check is ${initialQueryParameters}');
+    // if(initialQueryParameters!.isNotEmpty){
+    //   WidgetsBinding.instance.addPostFrameCallback((_) {
+    //     Get.to(()=>BookEvents(clubUID: initialQueryParameters!['clubUid'].toString(), eventID: initialQueryParameters!['eventId'].toString()));
+    //   });
+    // }
+  }
+
 
   Future<void> getHome() async {
     //if user found navigate to home else signup
@@ -173,14 +212,23 @@ class _InitPageState extends State<InitPage> {
   @override
   void initState() {
     // initCFL();
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (FirebaseAuth.instance.currentUser != null) {
-        getHome();
-      } else {
-        // Get.off(const PhoneLogin());
-        Get.offAll(AnonymousLogin());
-      }
-    });
+    if(kIsWeb){
+      webEventLink();
+    }
+    else {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (kIsWeb) {
+          Get.off(const BottomNavigationBarExampleApp());
+        } else {
+          if (FirebaseAuth.instance.currentUser != null) {
+            getHome();
+          } else {
+            Get.off(const PhoneLogin());
+            // Get.offAll(AnonymousLogin());
+          }
+        }
+      });
+    }
     super.initState();
   }
 

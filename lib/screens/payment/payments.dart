@@ -48,6 +48,7 @@ class _PaymentsState extends State<Payments> {
   void initState() {
     super.initState();
 
+    print('check amount is ${widget.amount}');
     localEntryList = List.from(widget.entryList); // Preserve original data
     localTableList = List.from(widget.tableList); // Preserve original data
 
@@ -75,7 +76,9 @@ class _PaymentsState extends State<Payments> {
 
   Future<void> openCheckout() async {
     Map<String, Object> options = {
-      'key': 'rzp_test_rxNWplsh8FCMMs',
+      // 'key': 'rzp_test_rxNWplsh8FCMMs',
+      'key': 'rzp_live_um0gFkBW3RX3fA',
+      'secret': 'woOvOOkFDqhRjdxTJtkCux5z',
       'amount': (widget.amount * 100).toInt(), // in paise
       'name': 'PartyOn Entertainment PVT LTD',
       'description': 'Payment',
@@ -158,7 +161,27 @@ class _PaymentsState extends State<Payments> {
       });
 
       if (!paymentStatus) {
-        openCheckout();
+        if(widget.amount.toString() == '0.0'){
+          await paymentSuccess(
+            context,
+            null,
+            amount: widget.amount,
+            clubUID: widget.clubUID,
+            tableList: widget.tableList,
+            promoterID: widget.promoterID,
+            organiserID: widget.organiserID,
+            eventID: widget.eventID,
+            couponDetail: widget.couponCodeDetail,
+            clubID: widget.clubID,
+            entryList: localEntryList,
+            totalEntranceCount: widget.totalEntranceCount,
+            tableDataList: widget.tableDataList,
+            totalTableCount: widget.totalTableCount,
+          );
+        }else{
+          openCheckout();
+        }
+
       } else {
         Get.back();
       }
@@ -211,9 +234,29 @@ class _PaymentsState extends State<Payments> {
             }
             transaction.update(tableDocRef, {
               "tableLeft": tableLeft - requested,
-            });
-            openCheckout();
-          }
+            });{
+              if(widget.amount.toString() == '0.0'){
+                await paymentSuccess(
+                  context,
+                  null,
+                  amount: widget.amount,
+                  clubUID: widget.clubUID,
+                  tableList: widget.tableList,
+                  promoterID: widget.promoterID,
+                  organiserID: widget.organiserID,
+                  eventID: widget.eventID,
+                  couponDetail: widget.couponCodeDetail,
+                  clubID: widget.clubID,
+                  entryList: localEntryList,
+                  totalEntranceCount: widget.totalEntranceCount,
+                  tableDataList: widget.tableDataList,
+                  totalTableCount: widget.totalTableCount,
+                );
+              }else{
+                openCheckout();
+              }
+
+            }}
         }
       });
     } catch (e) {

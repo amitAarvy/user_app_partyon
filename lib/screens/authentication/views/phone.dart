@@ -115,12 +115,17 @@ class _PhoneLoginState extends State<PhoneLogin> {
                     print(generatedOtp);
                     print(code);
                     if (generatedOtp == code) {
+                      print('check is ${phone}');
+
                       final url = Uri.parse('https://generatetoken-774845460870.asia-south1.run.app');
                       final response = await http.post(
                         url,
                         headers: {'Content-Type': 'application/json'},
                         body: jsonEncode({'phone': phone}),
                       );
+
+                      print(response.body);
+                      print(response.statusCode);
 
                       if (response.statusCode == 200) {
                         final Map<String, dynamic> data = jsonDecode(response.body);

@@ -78,7 +78,7 @@ class _PaymentsState extends State<Payments> {
     Map<String, Object> options = {
       // 'key': 'rzp_test_rxNWplsh8FCMMs',
       'key': 'rzp_live_um0gFkBW3RX3fA',
-      'secret': 'woOvOOkFDqhRjdxTJtkCux5z',
+      // 'secret': 'woOvOOkFDqhRjdxTJtkCux5z',
       'amount': (widget.amount * 100).toInt(), // in paise
       'name': 'PartyOn Entertainment PVT LTD',
       'description': 'Payment',
@@ -88,9 +88,9 @@ class _PaymentsState extends State<Payments> {
         'contact': FirebaseAuth.instance.currentUser?.phoneNumber ?? '',
         'email': ''
       },
-      'external': {
-        'wallets': ['paytm']
-      }
+      // 'external': {
+      //   'wallets': ['paytm']
+      // }
     };
 
     try {
@@ -340,7 +340,8 @@ class _PaymentsState extends State<Payments> {
       },
       child: const Scaffold(
         body: Center(
-          child: CircularProgressIndicator(color: Colors.orange),
+          child: Offstage()
+          // CircularProgressIndicator(color: Colors.orange),
         ),
       ),
     );

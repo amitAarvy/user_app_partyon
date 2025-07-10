@@ -68,6 +68,158 @@ class _PhoneLoginState extends State<PhoneLogin> {
   String? generatedOtp;
   FirebaseAuth auth = FirebaseAuth.instance;
 
+  Future<void> _phoneSignIn1(var phone) async {
+    TextEditingController otpTextController = TextEditingController();
+    int? resendToken;
+    try {
+      EasyLoading.dismiss();
+      await EasyLoading.show();
+      await auth.verifyPhoneNumber(
+        phoneNumber: ('+91$phone').toString(),
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          // ANDROID ONLY!
+          print('user crediential is ${credential}');
+          // Sign the user in (or link) with the auto-generated credential
+          await auth
+              .signInWithCredential(credential)
+              .then((UserCredential result) {
+            if (result.user != null) {
+              FirebaseFirestore.instance
+                  .collection('User')
+                  .doc(result.user?.uid)
+                  .get()
+                  .then((DocumentSnapshot<Map<String, dynamic>> value) {
+                if (value.exists) {
+                  // Get.off(() => const HomeView());
+                  Get.off(() => const VenueView());
+                  // Get.off(() => const BottomNavigationBarExampleApp());
+                } else {
+                  Get.off(
+                    UserInfoData(
+                      email: (result.user?.email ?? '').toString(),
+                      isPhone: true,
+                    ),
+                  );
+                }
+              });
+            } else {
+              print("object hu me 2");
+              Fluttertoast.showToast(msg: 'User does not exist');
+            }
+          });
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          if (e.code == 'invalid-phone-number') {}
+        },
+        codeSent: (String verificationId, int? resendToken) async {
+          startTimer();
+          resendToken = resendToken;
+          await EasyLoading.dismiss();
+          if (!mounted) return;
+          await Get.defaultDialog(
+            title: 'Enter OTP',
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                PinCodeTextField(
+                  length: 6,
+                  appContext: context,
+                  autoFocus: true,
+                  controller: otpTextController,
+                  onChanged: (String val) {},
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.resolveWith(
+                        (Set<MaterialState> states) => Colors.black,
+                  ),
+                ),
+                child: const Text('Confirm'),
+                onPressed: () async {
+                  final String code = otpTextController.text.trim();
+
+                  try {
+                    AuthCredential credential = PhoneAuthProvider.credential(
+                      verificationId: verificationId,
+                      smsCode: code,
+                    );
+
+                    UserCredential result =
+                    await auth.signInWithCredential(credential);
+
+                    if (result.user != null) {
+                      await FirebaseFirestore.instance
+                          .collection('User')
+                          .doc(result.user?.uid)
+                          .get()
+                          .then((DocumentSnapshot<Map<String, dynamic>> value) {
+                        if (value.exists) {
+                          if (widget.eventID != null) {
+                            Get.back();
+                            Get.back();
+                          } else {
+                            // Get.off(() => const HomeView());
+                            // Get.off(() => const VenueView());
+                            Get.off(() => const BottomNavigationBarExampleApp());
+                          }
+                        } else {
+                          Get.off(
+                            UserInfoData(
+                              email: (result.user?.email ?? '').toString(),
+                              isPhone: true,
+                            ),
+                          );
+                        }
+                      });
+                    } else {
+                      await Fluttertoast.showToast(msg: 'User does not exist');
+                    }
+                  } catch (e) {
+                    print('check error is ${ e.toString()}');
+                    otpTextController.clear();
+                    await Fluttertoast.showToast(msg: e.toString());
+                  }
+                },
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (otpController.count.value == 0) {
+                    Get.back();
+                    _phoneSignIn(phone);
+                  }
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.resolveWith(
+                        (Set<MaterialState> states) => Colors.green,
+                  ),
+                ),
+                child: Obx(
+                      () => Text(
+                    otpController.count.value == 0
+                        ? 'Resend'
+                        : 'Resend in ${otpController.count.value}',
+                    style: GoogleFonts.ubuntu(color: Colors.white),
+                  ),
+                ),
+              )
+            ],
+          );
+        },
+        forceResendingToken: resendToken,
+        timeout: const Duration(seconds: 30),
+        codeAutoRetrievalTimeout: (String verificationId) {
+          // Auto-resolution timed out...
+        },
+      );
+    } catch (e) {
+      EasyLoading.dismiss();
+      await Fluttertoast.showToast(msg: 'Something went wrong');
+    }
+  }
+
   Future<void> _phoneSignIn(var phone) async {
     TextEditingController otpTextController = TextEditingController();
 
@@ -317,7 +469,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
                         textColor: Colors.white,
                         fontSize: isFolded ? 24.sp : 45.sp,
                       )
-                          : _phoneSignIn(_phoneController.text);
+                          :_phoneController.text.toString() == '1111111111'?_phoneSignIn1(_phoneController.text): _phoneSignIn(_phoneController.text);
                     },
                     child: const Text('Send OTP'),
                   )

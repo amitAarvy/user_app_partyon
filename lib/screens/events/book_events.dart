@@ -1160,8 +1160,8 @@ class _BookEventsState extends State<BookEvents> {
                                                              if (entryCode != null) {
                                                                if (totalEntranceCount > 0) {
                                                                  print('yes filler data is ${enteredCode.toLowerCase()}');
-                                                                 log('yes filler data is ${doc['data']}');
-                                                                 if(doc['data']['pomotionData']['fillerCouponCode'].toString() != '' &&   enteredCode.toLowerCase() == doc['data']['pomotionData']['fillerCouponCode'].toString().toLowerCase()){
+                                                                 log('yes filler data is ${doc}');
+                                                                 if(doc['filler'].toString() != '' &&   enteredCode.toLowerCase() == doc['filler'].toString().toLowerCase()){
                                                                    print('yes filler data is ');
 
                                                                    var prFiller =  await FirebaseFirestore.instance.collection('PrAnalytics').get();
@@ -1197,8 +1197,8 @@ class _BookEventsState extends State<BookEvents> {
                                                                      "id": doc.id,
                                                                      "type": 'entry',
                                                                      'eventId':widget.eventID,
-                                                                     'data': doc['data']['pomotionData']['fillerCouponCode'].toString(),
-                                                                     'coupon': doc['data']['pomotionData']['fillerCouponCode'].toString()
+                                                                     'data': doc['filler'].toString(),
+                                                                     'coupon': doc['filler'].toString()
                                                                    };
                                                                    matchFound = true;
                                                                    break;

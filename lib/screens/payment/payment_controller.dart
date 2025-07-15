@@ -81,7 +81,7 @@ Future<void> paymentSuccess(
       'userID': uid(),
       'amount': amount,
       "couponCode":couponDetail==null?null:couponDetail['type'],
-      "discount":couponDetail==null?null:couponDetail['data']['discount'],
+      "discount":couponDetail==null?null:couponDetail,
       'status': 'S',
       'ipv6': ipv6,
       'date': FieldValue.serverTimestamp(),
@@ -92,7 +92,7 @@ Future<void> paymentSuccess(
       'organiserID': organiserID,
       'entryList':entryList,
       'tableList': tableList,
-      'type':couponDetail ==null?null: couponDetail['appliedCoupon'].toString()
+      'type':couponDetail ==null?null:couponDetail['appliedCoupon'].toString()
     })
         .whenComplete(() async{
       print('yes it is check  ${promoterID}');

@@ -26,7 +26,7 @@ import 'package:user/screens/live_stream/dynamic_link.dart';
 import 'package:user/screens/welcome.dart';
 import 'package:user/utils/dynamic_provider.dart';
 import 'package:user/utils/utils.dart';
-// import 'package:web/web.dart';
+import 'package:web/web.dart';
 
 
 void main() async {
@@ -143,9 +143,9 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ),
                 home:
-                // kIsWeb? Welcome(
-                //     initPage: InitPage())
-                //         :
+                kIsWeb? Welcome(
+                    initPage: InitPage())
+                        :
                 UpgradeAlert(
                   child: const Welcome(
                     initPage: InitPage(),
@@ -173,13 +173,13 @@ class _InitPageState extends State<InitPage> {
   Map<String, String>? initialQueryParameters;
 
   webEventLink(){
-    // initialQueryParameters = Uri.parse(window.location.href).queryParameters;
-    // print('dynamic link check is ${initialQueryParameters}');
-    // if(initialQueryParameters!.isNotEmpty){
-    //   WidgetsBinding.instance.addPostFrameCallback((_) {
-    //     Get.to(()=>BookEvents(clubUID: initialQueryParameters!['clubUid'].toString(), eventID: initialQueryParameters!['eventId'].toString()));
-    //   });
-    // }
+    initialQueryParameters = Uri.parse(window.location.href).queryParameters;
+    print('dynamic link check is ${initialQueryParameters}');
+    if(initialQueryParameters!.isNotEmpty){
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.to(()=>BookEvents(clubUID: initialQueryParameters!['clubUid'].toString(), eventID: initialQueryParameters!['eventId'].toString()));
+      });
+    }
   }
 
 

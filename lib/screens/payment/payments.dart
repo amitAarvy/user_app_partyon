@@ -3,6 +3,7 @@ import 'package:dart_ipify/dart_ipify.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:random_string/random_string.dart';
@@ -162,6 +163,7 @@ class _PaymentsState extends State<Payments> {
 
       if (!paymentStatus) {
         if(widget.amount.toString() == '0.0'){
+          print('check it is ');
           await paymentSuccess(
             context,
             null,
@@ -178,16 +180,29 @@ class _PaymentsState extends State<Payments> {
             tableDataList: widget.tableDataList,
             totalTableCount: widget.totalTableCount,
           );
+
         }else{
           openCheckout();
         }
-
       } else {
         Get.back();
       }
     } catch (e) {
       print('Transaction failed: $e');
+      EasyLoading.dismiss();
+      paymentFailedSomeError();
+      Get.back();
       Fluttertoast.showToast(msg: 'An error occurred. Please try again.');
+    }
+  }
+
+
+  paymentFailedSomeError(){
+    if (widget.totalTableCount != 0) {
+      print('check it tableList is ${widget.tableList}');
+      updateTable(paymentStatus: true,tableList: localTableList);
+    } else {
+      updateEntry(paymentStatus: true, evenList: localEntryList);
     }
   }
 
@@ -255,7 +270,6 @@ class _PaymentsState extends State<Payments> {
               }else{
                 openCheckout();
               }
-
             }}
         }
       });
